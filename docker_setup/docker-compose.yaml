@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  neo4j:
+    hostname: neo4j
+    container_name: neo4j_fair
+    image: neo4j:4.2.3
+    ports: 
+      - 7474:7474
+      - 7687:7687
+    volumes:
+      - ./data:/data
+      - ./logs:/logs
+      - ./conf:/conf
+      - ./plugins:/plugins
+      - ./db_backup:/home/db
+    environment:
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4JLABS_PLUGINS=\[\"apoc\"\]
+    
+# volumes:
+  # sonarqube_conf:
+  # sonarqube_data:
+  # sonarqube_extensions:
+  # sonarqube_bundled-plugins:
+  # sonar_postgresql:
+  # sonar_postgresql_data:
+  # jenkins_home:
+
+# networks:
+#   sonarnet:
+#     driver: bridge
