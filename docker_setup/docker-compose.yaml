@@ -10,10 +10,10 @@ services:
       - 7687:7687
     volumes:
       - ./data:/var/lib/neo4j/data
-      - ./logs:/var/lib/neo4j/logs
       - ./plugins:/var/lib/neo4j/plugins
-      - ./db_backup:/home/db
+      - ./db_backup:/var/lib/neo4j/import/
     environment:
       - NEO4J_dbms_security_procedures_whitelist=apoc.*
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*
       - NEO4J_AUTH=neo4j/s3cr3t
+      - NEO4J_apoc_import_file_enabled=true
