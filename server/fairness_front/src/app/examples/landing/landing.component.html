@@ -1,0 +1,90 @@
+<div class="main">
+
+    <div class="section text-center">
+        <div class="container">
+            <div class="row">
+                <div class="tim-title">
+                    <h2>Inputs</h2>
+                <br/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <div ngbDropdown class="dropdown" placement="bottom-middle">
+                        <a class="nav-link" id="dropdownBasic1">
+                            <button class="btn btn-secondary btn-lg" ngbDropdownToggle type="button">
+                                User
+                            </button>
+                        </a>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="dropdown-danger dropdown-menu-right">
+                            <a class="dropdown-item">Action - 1</a>
+                            <a class="dropdown-item">Another Action</a>
+                            <a class="dropdown-item">Something else is here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item">Separated link</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div ngbDropdown class="dropdown" placement="bottom-middle">
+                        <a class="nav-link" id="dropdownBasic1">
+                            <button class="btn btn-secondary btn-lg" ngbDropdownToggle type="button">
+                                Research Interest
+                            </button>
+                        </a>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="dropdown-danger dropdown-menu-right">
+                            <a class="dropdown-item">Action - 1</a>
+                            <a class="dropdown-item">Another Action</a>
+                            <a class="dropdown-item">Something else is here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item">Separated link</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Preference: Similarity - Distance</label>
+                    <nouislider [connect]="false" [min]="0" [max]="100" [step]="1" [(ngModel)]="simpleSlider"
+                        [tooltips]="false" class="slider"></nouislider>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-default btn-lg">Get Suggestions</button>
+                </div>
+            </div>
+            <br /><br />
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body" (click)="clickResponse()">
+                            <h5 class="card-title">Card title</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                            <p class="card-text">Some quick example text to build on the card title and make up the bulk
+                                of the card's content.</p>
+                            <a href="#" class="card-link">Card link</a>
+                            <a href="#" class="card-link">Another link</a>
+                        </div>
+                    </div>
+                    <div id="infoDiv" class="cardInfo pull-right" style="width: 18rem;" hidden>
+                        <div class="card-body">
+                            <h5 class="card-title">Card title</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                            <p class="card-text">Some quick example text to build on the card title and make up the bulk
+                                of the card's content.</p>
+                            <a href="#" class="card-link">Card link</a>
+                            <a href="#" class="card-link">Another link</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <ngb-pagination [collectionSize]="100" [(page)]="page" [maxSize]="5" [rotate]="true">
+                </ngb-pagination>
+            </div>
+        </div>
+    </div>
+</div>
