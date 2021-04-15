@@ -7,6 +7,19 @@ class RepoAccess():
     def __init__(self, h5file):
         self.h5file = h5file
 
+    def get_all_users(self):
+        user_array_tbl = self.h5file.root.user_info
+
+        all_user = []
+        for x in user_array_tbl.iterrows():
+            all_user.append({
+                'uuid': x['uuid'].decode('UTF-8'),
+                'first_name': x['first_name'].decode('UTF-8'),
+                'last_name': x['last_name'].decode('UTF-8'),
+                'research_interest': x['research_interest'].decode('UTF-8')
+            })
+        return all_user
+
     def get_similarity(self, uuid, research_interest):
         
         cos_sim = []

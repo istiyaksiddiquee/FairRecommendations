@@ -9,7 +9,13 @@ class RecommendationService():
         self.read_mode = pt.open_file(filename, 'r')
         self.access = RepoAccess(self.read_mode)
 
-    def get_recommendation(self, req_uuid, req_research_interest, weight_for_similarity):
+    def get_all_users(self):
+        output = self.access.get_all_users()
+        self.read_mode.close()
+        return output
+
+
+    def get_recommendation(self, req_uuid, req_research_interest, weight_for_similarity, req_page_size, req_page_number):
         obj_array = self.access.get_similarity(req_uuid, req_research_interest)
         self.read_mode.close()
 
@@ -19,12 +25,20 @@ class RecommendationService():
             scored_items.append(ResponseStructure(item.uuid, item.first_name, 
                                 item.last_name, item.affiliation, 
                                 item.research_interest, item.gender, 
-                                item.hop_distance, item.cosine_sim, 
-                                (float(weight_for_similarity)*item.hop_distance + (1-float(weight_for_similarity)) *item.cosine_sim)))
+                                round(item.hop_distance, 3), round(float(item.cosine_sim), 3), 
+                                round((float(weight_for_similarity)*item.hop_distance + (1-float(weight_for_similarity)) *item.cosine_sim), 3)))
         
         with_bias = self.sort_biased_array(scored_items)
         bias_corrected = self.sort_bias_processed_array(scored_items)
         bias_corrected = self.add_reference_to_bias_corrected_data(with_bias, bias_corrected)
+
+        if req_page_size != None and req_page_number != None: 
+            start_index = int(req_page_size) * int(req_page_number)
+            end_index = start_index + int(req_page_size)
+            
+            with_bias = with_bias[start_index:end_index]
+            bias_corrected = bias_corrected[start_index:end_index]
+            
         output = {
             'with_bias': self.jsonify_recommendation(with_bias, True),
             'bias_corrected': self.jsonify_recommendation(bias_corrected, False)

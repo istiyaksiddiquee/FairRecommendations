@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
-import { LandingService } from './landing.service';
 import { Component, OnInit } from '@angular/core';
+
+import { LandingService } from './landing.service';
 
 
 @Component({
@@ -12,19 +12,38 @@ import { Component, OnInit } from '@angular/core';
 export class LandingComponent implements OnInit {
   simpleSlider = 40;
   page = 3;
-  focus: any;
-  focus1: any;
+  users = []
+  with_bias = []
+  bias_corrected = []
 
   constructor(private landingService: LandingService) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.loadUsers()
+  }
 
-  clickResponse() {
-    var infoDiv = document.getElementById('infoDiv');
-    infoDiv.hidden === true ? infoDiv.hidden = false : infoDiv.hidden = true;
-    this.landingService.getInformation().subscribe((data: any) => {
-      console.log(data.research_interests)
+  loadUsers() {
+    this.landingService.getAllUsers().subscribe((data: any) => {
+      this.users = data;
     });
+  }
+
+  loadData() {
+    this.landingService.getInformation().subscribe((data: any) => {
+
+      this.with_bias = data.with_bias;
+      this.bias_corrected = data.bias_corrected;
+    });
+  }
+  
+  clickResponse1() {
+    var infoDiv = document.getElementById('infoDiv1');
+    infoDiv.hidden === true ? infoDiv.hidden = false : infoDiv.hidden = true;
+  }
+
+  clickResponse2() {
+    var infoDiv = document.getElementById('infoDiv2');
+    infoDiv.hidden === true ? infoDiv.hidden = false : infoDiv.hidden = true;
   }
 
   // getInformation() {

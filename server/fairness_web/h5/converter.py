@@ -110,11 +110,3 @@ class Converter:
         tbl = self.h5file.root.similarity_userarray
         for row in tbl.where("id == " + str(1)):
             print(row['users'])
-
-
-
-
-
-
-
-

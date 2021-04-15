@@ -4,12 +4,6 @@ from rest_framework.response import Response
 
 from .services import RecommendationService
 
-# Create your views here.
-class HelloApiView(APIView):
-    """ Testing REST API """
-
-    def get(self, request, format=None):
-        return Response({'message': 'Hello'})
 
 class ResearchInterest(APIView):
     """ Research Interest """
@@ -42,17 +36,31 @@ class ResearchInterest(APIView):
         ]
         return Response({'research_interests': research_interest})
 
-class DemoForH5(APIView):
+
+class User(APIView):
+
+    def get(self, request, format=None):
+        recommendation_service = RecommendationService('h5/output.h5')
+        output = recommendation_service.get_all_users()
+        return Response(output)
+
+
+class Recommendation(APIView):
 
     def get(self, request, format=None):
 
         req_uuid = request.GET['uuid']
         req_research_interest = request.GET['research_interest']
         req_sim_weight = request.GET['sim_weight']
+        req_page_size = request.GET['page_size']
+        req_page_number = request.GET['page_number']
 
         if req_uuid == None or len(req_uuid) == 0 or req_research_interest == None or len(req_research_interest) == 0:
             return Response().status_code(400)
+        if req_page_size != None and req_page_number != None: 
+            if req_page_size.isnumeric() != True or req_page_number.isnumeric() != True:
+                return Response().status_code(400)
 
         recommendation_service = RecommendationService('h5/output.h5')
-        output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight)
+        output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
         return Response(output)
