@@ -7,7 +7,7 @@ class RepoAccess():
     def __init__(self, h5file):
         self.h5file = h5file
 
-    def get_similarity_for_uuid(self, uuid):
+    def get_similarity(self, uuid, research_interest):
         
         cos_sim = []
         hop_dis = []
@@ -18,16 +18,15 @@ class RepoAccess():
 
         for row in user_array_tbl.where("id == " + str(1)):
             user_array = row['users']
-        
+
         sim_tbl = self.h5file.root.similarity
-        for row in sim_tbl.where("uuid == '" + uuid + "'"):
+        for row in sim_tbl.where("(uuid == '" + uuid + "') & (research_interest == '" + research_interest + "')"):
             cos_sim = row['cosine_sim']
             hop_dis = row['hop_distance']
 
         user_tbl = self.h5file.root.user_info
         for i in range(len(user_array)):
-            
-            info = {}
+
             for row in user_tbl.where("uuid == '" + str(user_array[i].decode('UTF-8')) + "'"):
             
                 obj = ReturnedObject(row['uuid'].decode('UTF-8'), 

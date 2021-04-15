@@ -1,9 +1,8 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-import tables as pt 
 
-from h5.repository_access import RepoAccess
+from .services import RecommendationService
 
 # Create your views here.
 class HelloApiView(APIView):
@@ -47,20 +46,13 @@ class DemoForH5(APIView):
 
     def get(self, request, format=None):
 
-        output_arr = []
-        read_mode = pt.open_file('h5/output.h5', 'r')
-        access = RepoAccess(read_mode)
-        obj_array = access.get_similarity_for_uuid('xyz1')
-        for item in obj_array:
-            output_arr.append ({
-                'uuid': item.uuid, 
-                'first_name': item.first_name,
-                'last_name': item.last_name, 
-                'affiliation': item.affiliation,
-                'research_interest': item.research_interest,
-                'gender': item.gender, 
-                'hop_distance': item.hop_distance,
-                'cosine_sim': item.cosine_sim
-            })
+        req_uuid = request.GET['uuid']
+        req_research_interest = request.GET['research_interest']
+        req_sim_weight = request.GET['sim_weight']
 
-        return Response(output_arr)
+        if req_uuid == None or len(req_uuid) == 0 or req_research_interest == None or len(req_research_interest) == 0:
+            return Response().status_code(400)
+
+        recommendation_service = RecommendationService('h5/output.h5')
+        output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight)
+        return Response(output)
