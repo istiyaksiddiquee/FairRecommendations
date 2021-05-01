@@ -1,6 +1,7 @@
 import csv
-import tables as pt 
+import tables as pt
 
+from .converter import Converter
 
 class RepoAccess():
 
@@ -21,7 +22,7 @@ class RepoAccess():
         return all_user
 
     def get_similarity(self, uuid, research_interest):
-        
+
         cos_sim = []
         hop_dis = []
         user_array = []
@@ -41,20 +42,25 @@ class RepoAccess():
         for i in range(len(user_array)):
 
             for row in user_tbl.where("uuid == '" + str(user_array[i].decode('UTF-8')) + "'"):
-            
-                obj = ReturnedObject(row['uuid'].decode('UTF-8'), 
-                                    row['first_name'].decode('UTF-8'), 
-                                    row['last_name'].decode('UTF-8'), 
-                                    row['affiliation'].decode('UTF-8'), 
-                                    row['research_interest'].decode('UTF-8'), 
-                                    row['gender'].decode('UTF-8'), 
-                                    hop_dis[i], 
-                                    cos_sim[i])
+
+                obj = ReturnedObject(row['uuid'].decode('UTF-8'),
+                                     row['first_name'].decode('UTF-8'),
+                                     row['last_name'].decode('UTF-8'),
+                                     row['affiliation'].decode('UTF-8'),
+                                     row['research_interest'].decode('UTF-8'),
+                                     row['gender'].decode('UTF-8'),
+                                     hop_dis[i],
+                                     cos_sim[i])
                 return_array.append(obj)
 
-        
         return return_array
-            
+
+    def reload_database(self, user_file, sim_file):
+        converter = Converter(self.h5file)
+        converter.convert_to_user_info(user_file)
+        # converter.convert_to_similarity_file(sim_file)
+        return
+
 
 class ReturnedObject():
 

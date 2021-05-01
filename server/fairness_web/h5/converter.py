@@ -1,112 +1,129 @@
 import csv
-import tables as pt 
-
+import json 
+import tables as pt
+from collections import namedtuple
 
 class User(pt.IsDescription):
-    uuid = pt.StringCol(30)
-    first_name = pt.StringCol(20)
-    last_name = pt.StringCol(20)
-    affiliation = pt.StringCol(40)
-    research_interest = pt.StringCol(30)
+    uuid = pt.StringCol(50)
+    name = pt.StringCol(50)
+    nationality = pt.StringCol(40)
     gender = pt.StringCol(10)
+    research_interests = pt.StringCol(itemsize=30, shape=15)
+
 
 class Publication(pt.IsDescription):
-    publication_id = pt.StringCol(30)
-    first_author = pt.StringCol(30) # uuid
-    title = pt.StringCol(20)
-    date = pt.StringCol(20)
-    no_of_coauthors = pt.Int32Col()
-    co_author_list = pt.StringCol(itemsize=30, shape=10)
+    publication_id = pt.StringCol(50)
+    author_id = pt.StringCol(50)  # uuid
+    title = pt.StringCol(200)
+    abstract = pt.StringCol(500)
+
 
 class Similarity(pt.IsDescription):
-    uuid = pt.StringCol(30)
-    research_interest = pt.StringCol(50)
-    hop_distance = pt.Int32Col(shape=5)
-    cosine_sim = pt.Float32Col(shape=5)
+    uuid = pt.StringCol(50)
+    hop_distance = pt.Float32Col(shape=920)
+    cosine_sim = pt.Float32Col(shape=920)
+
 
 class Similarity_UserArray(pt.IsDescription):
     id = pt.Int32Col()
-    users = pt.StringCol(itemsize=30, shape=5)
+    users = pt.StringCol(itemsize=50, shape=920)
+
 
 class Converter:
 
     def __init__(self, h5file):
         self.h5file = h5file
-    
-    def convert_to_similarity_file(self, sim_file, hop_file):
-        uarray = self.h5file.create_table(self.h5file.root, 'similarity_userarray', Similarity_UserArray)
+
+    def convert_to_similarity_file(self, sim_file):
+
+        # uarray = self.h5file.create_table(self.h5file.root, 'similarity_userarray', Similarity_UserArray)
         sim = self.h5file.create_table(self.h5file.root, 'similarity', Similarity)
-        with open(sim_file) as csv_file:
-            row_count = 0
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            for row in csv_reader:
-                if row_count == 0:
-                    row_count = 1
-                    userarray_row = uarray.row
+        
+        with open(sim_file) as json_file:
+            data = json.load(json_file)
+            for item in data:
+                obj = namedtuple("A", item.keys())(*item.values())
 
-                    userarray_row['id'] = 1
-                    userarray_row['users'] = row[2:len(row)]
-
-                    userarray_row.append()
-                else:
-                    sim_row = sim.row
-
-                    sim_row['uuid'] = row[0]
-                    sim_row['research_interest'] = row[1]
-                    sim_row['cosine_sim'] = row[2:len(row)]
+                sim_row['uuid'] = obj.uuid.encode(encoding='UTF-8')
+                sim_row['cosine_sim'] = obj.sim_score 
+                sim_row['hop_distance'] = obj.hop_dist
+                
+                sim_row['research_interest'] = row[1]
+                sim_row['cosine_sim'] = row[2:len(row)]
                     
-                    sim_row.append()
-            uarray.flush()
+                sim_row.append()
+
             sim.flush()
 
-        with open(hop_file) as csv_file:
-            row_count = 0
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            for hop_row in csv_reader:
-                for tbl_row in sim.where("uuid == '" + str(hop_row[0]) + "'"):
-                    tbl_row['hop_distance'] = hop_row[1:len(row)]
-                    tbl_row.update()
+    def convert_to_user_info(self, json_file):
 
-        sim.flush()                
-
-    def convert_to_user_info(self, csv_file):
+        user_info_table = self.h5file.create_table(self.h5file.root, 'user_info', User)
+        publication_table = self.h5file.create_table(self.h5file.root, 'publication', Publication)
         
-        tbl = self.h5file.create_table(self.h5file.root, 'user_info', User)
+        with open(json_file) as json_file:
+            data = json.load(json_file)
 
-        with open(csv_file) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            
-            for csv_row in csv_reader:
+            for item in data:
+                obj = namedtuple("A", item.keys())(*item.values())
+
+                h5_row = user_info_table.row
                 
-                h5_row = tbl.row
-                
-                h5_row['uuid'] = csv_row[0]
-                h5_row['first_name'] = csv_row[1]
-                h5_row['last_name'] = csv_row[2]
-                h5_row['affiliation'] = csv_row[3]
-                h5_row['research_interest'] = csv_row[4]
-                h5_row['gender'] = csv_row[5]
-                
+                h5_row['uuid'] = obj.uuid.encode(encoding='UTF-8')
+                h5_row['name'] = obj.name.encode(encoding='UTF-8')
+                h5_row['nationality'] = obj.nationality.encode(encoding='UTF-8')
+                h5_row['gender'] = obj.gender.encode(encoding='UTF-8')
+
+                interest_arr = []
+
+                for i in range(15):
+                    interest_arr.append('')
+
+                for j in range(len(obj.research_interest)):
+                    if j < 15:
+                        interest_arr[j] = obj.research_interest[j].encode(encoding='UTF-8')
+
+                h5_row['research_interests'] = interest_arr
+
+                for paper in obj.papers:
+                    p = namedtuple("A", paper.keys())(*paper.values())
+                    pub_row = publication_table.row
+
+                    pub_row['publication_id'] = p.uuid.encode(encoding='UTF-8')
+                    pub_row['author_id'] = obj.uuid.encode(encoding='UTF-8')
+                    pub_row['title'] = p.title.encode(encoding='UTF-8')
+                    pub_row['abstract'] = p.abstract.encode(encoding='UTF-8')
+
+                    pub_row.append()
+
                 h5_row.append()
-                
 
-        tbl.flush()
+        publication_table.flush()
+        user_info_table.flush()
+
+        self.sample_from_user()
+        return
 
     def sample_from_user(self):
-        
-        tbl = self.h5file.root.user_info        
-        for row in tbl.where("uuid == '" + 'xyz2' + "'"):
-            print(row['first_name'])
-    
+
+        user_tbl = self.h5file.root.user_info
+        paper_tbl = self.h5file.root.publication
+        search_str = "b12408f0-d239-49cb-8098-c88f76fad069"
+        for row in user_tbl.where("uuid == '" + search_str + "'"):
+            arr = [a.decode('UTF-8') for a in row['research_interests'] if len(a) != 0]
+            print('user name:' + row['name'].decode('UTF-8') + 'research_interests: ' + ', '.join(arr))
+            for item in paper_tbl.where("author_id == '" + search_str + "'"):
+                print(item['title'])
+                
+
     def sample_from_similarity(self):
-        
+
         tbl = self.h5file.root.similarity
         for row in tbl.where("uuid == '" + 'xyz2' + "'"):
             print(row['hop_distance'])
             print(row['cosine_sim'])
 
     def sample_from_sim_user_array(self):
-        
+
         tbl = self.h5file.root.similarity_userarray
         for row in tbl.where("id == " + str(1)):
             print(row['users'])

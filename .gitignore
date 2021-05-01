@@ -1,6 +1,10 @@
 docker_setup/db_backup/
 docker_setup/data/
 saved_model
+.vscode
+server/.devcontainer
 server/fairness_front/.editorconfig
 server/fairness_front/node_modules
 server/fairness_front/e2e
+server/fairness_web/graph/
+**/server/fairness_web/**/__pycache__/

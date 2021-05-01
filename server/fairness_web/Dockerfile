@@ -1,7 +1,5 @@
 FROM python:3.9
 
-MAINTAINER Istiyak Siddiquee "istiyaksiddiquee@gmail.com"
-
 ENV PYTHONUNBUFFERED=1
 
 ENV HOME /root

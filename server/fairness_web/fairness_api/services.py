@@ -1,19 +1,27 @@
-import tables as pt 
+import os.path
+import tables as pt
 
 from h5.repository_access import RepoAccess
+
+from enum import Enum
+
+
+class Information(Enum):
+    DATABASE_PATH = "graph"
+    DATABASE_NAME = "db.h5"
 
 
 class RecommendationService():
 
     def __init__(self, filename):
-        self.read_mode = pt.open_file(filename, 'r')
+        self.read_mode = pt.open_file(
+            Information.DATABASE_PATH + '/' + Information.DATABASE_NAME, 'r')
         self.access = RepoAccess(self.read_mode)
 
     def get_all_users(self):
         output = self.access.get_all_users()
         self.read_mode.close()
         return output
-
 
     def get_recommendation(self, req_uuid, req_research_interest, weight_for_similarity, req_page_size, req_page_number):
         obj_array = self.access.get_similarity(req_uuid, req_research_interest)
@@ -22,23 +30,25 @@ class RecommendationService():
         scored_items = []
         for item in obj_array:
 
-            scored_items.append(ResponseStructure(item.uuid, item.first_name, 
-                                item.last_name, item.affiliation, 
-                                item.research_interest, item.gender, 
-                                round(item.hop_distance, 3), round(float(item.cosine_sim), 3), 
-                                round((float(weight_for_similarity)*item.hop_distance + (1-float(weight_for_similarity)) *item.cosine_sim), 3)))
-        
+            scored_items.append(ResponseStructure(item.uuid, item.first_name,
+                                item.last_name, item.affiliation,
+                                item.research_interest, item.gender,
+                                round(item.hop_distance, 3), round(
+                                    float(item.cosine_sim), 3),
+                                round((float(weight_for_similarity)*item.hop_distance + (1-float(weight_for_similarity)) * item.cosine_sim), 3)))
+
         with_bias = self.sort_biased_array(scored_items)
         bias_corrected = self.sort_bias_processed_array(scored_items)
-        bias_corrected = self.add_reference_to_bias_corrected_data(with_bias, bias_corrected)
+        bias_corrected = self.add_reference_to_bias_corrected_data(
+            with_bias, bias_corrected)
 
-        if req_page_size != None and req_page_number != None: 
+        if req_page_size != None and req_page_number != None:
             start_index = int(req_page_size) * int(req_page_number)
             end_index = start_index + int(req_page_size)
-            
+
             with_bias = with_bias[start_index:end_index]
             bias_corrected = bias_corrected[start_index:end_index]
-            
+
         output = {
             'with_bias': self.jsonify_recommendation(with_bias, True),
             'bias_corrected': self.jsonify_recommendation(bias_corrected, False)
@@ -56,36 +66,36 @@ class RecommendationService():
         output_arr = []
         if bias:
             for item in obj_array:
-                output_arr.append ({
-                    'uuid': item.uuid, 
+                output_arr.append({
+                    'uuid': item.uuid,
                     'first_name': item.first_name,
-                    'last_name': item.last_name, 
+                    'last_name': item.last_name,
                     'affiliation': item.affiliation,
                     'research_interest': item.research_interest,
-                    'gender': item.gender, 
+                    'gender': item.gender,
                     'hop_distance': item.hop_distance,
                     'cosine_sim': item.cosine_sim,
                     'score': item.score
                 })
         else:
             for item in obj_array:
-                output_arr.append ({
-                    'uuid': item.uuid, 
+                output_arr.append({
+                    'uuid': item.uuid,
                     'first_name': item.first_name,
-                    'last_name': item.last_name, 
+                    'last_name': item.last_name,
                     'affiliation': item.affiliation,
                     'research_interest': item.research_interest,
-                    'gender': item.gender, 
+                    'gender': item.gender,
                     'hop_distance': item.hop_distance,
                     'cosine_sim': item.cosine_sim,
                     'score': item.score,
                     'bias_ref': item.bias_ref
                 })
-        
+
         return output_arr
 
     def add_reference_to_bias_corrected_data(self, with_bias, bias_corrected):
-        
+
         for item in bias_corrected:
             for t in range(len(with_bias)):
                 if with_bias[t].uuid == item.uuid:
@@ -93,6 +103,25 @@ class RecommendationService():
                     break
 
         return bias_corrected
+
+
+class DatabaseResetService():
+
+    def __init__(self):
+        self.write_mode = pt.open_file(Information.DATABASE_PATH.value + '/' + Information.DATABASE_NAME.value, 'w')
+        self.access = RepoAccess(self.write_mode)
+
+    def recreate_db(self, person_json, similarity_json):
+
+        person_json_path = Information.DATABASE_PATH.value + '/' + person_json
+        similarity_json_path = Information.DATABASE_PATH.value + '/' + similarity_json
+
+        if os.path.isfile(person_json_path) and os.path.isfile(similarity_json_path):
+            self.access.reload_database(person_json_path, similarity_json_path)
+            self.write_mode.close()
+            return 0
+        else:
+            return 1
 
 
 class ResponseStructure():
@@ -106,4 +135,3 @@ class ResponseStructure():
         self.hop_distance = hop_distance
         self.cosine_sim = cosine_sim
         self.score = score
-        
