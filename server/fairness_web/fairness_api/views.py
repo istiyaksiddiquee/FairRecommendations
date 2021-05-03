@@ -105,6 +105,8 @@ class DatabaseReset(APIView):
                               "name of person json file", type=openapi.TYPE_STRING),
             openapi.Parameter('similarity_json', openapi.IN_QUERY,
                               "name of similarity json file", type=openapi.TYPE_STRING),
+            openapi.Parameter('pickle_file_name', openapi.IN_QUERY,
+                              "name of database pickle file", type=openapi.TYPE_STRING),
         ], responses={
             200: openapi.Response(
                 'Successful!'
@@ -120,18 +122,23 @@ class DatabaseReset(APIView):
     def get(self, request, format=None):
         req_person = request.GET['person_json']
         req_similarity = request.GET['similarity_json']
+        req_pickle_file_name = request.GET['pickle_file_name']
 
         if (req_person == None
         or len(req_person) == 0
         or req_similarity == None
-        or len(req_similarity) == 0):
+        or len(req_similarity) == 0
+        or req_pickle_file_name == None 
+        or len(req_pickle_file_name) == 0):
             return Response("Malformed Request", status=status.HTTP_400_BAD_REQUEST)
 
         # call to neo4j code to recreate these json files
         # with the corresponding name
+        # neosvc = Neo4jSVC()
+        # req_person, req_similarity = neosvc.populate_json(req_person, req_similarity)
 
         db_rest_svc = DatabaseResetService()
-        return_code = db_rest_svc.recreate_db(req_person, req_similarity)
+        return_code = db_rest_svc.recreate_db(req_person, req_similarity, req_pickle_file_name)
 
         if return_code != 0:
             return Response(status=status.HTTP_400_BAD_REQUEST)
