@@ -1,0 +1,163 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Fair Recommendation in Research",
+		"_postman_id": "53ef8464-004b-bd51-a20b-02f3bce68ff0",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Database Reset",
+			"request": {
+				"url": {
+					"raw": "localhost:8080/api/databaseReset/?person_json=persons_list.json&similarity_json=scores_dict.json&pickle_file_name=networkx_20210326.pickle",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"databaseReset",
+						""
+					],
+					"query": [
+						{
+							"key": "person_json",
+							"value": "persons_list.json",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "similarity_json",
+							"value": "scores_dict.json",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "pickle_file_name",
+							"value": "networkx_20210326.pickle",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Research Interests",
+			"request": {
+				"url": "localhost:8080/api/researchInterests/",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get Recommendation",
+			"request": {
+				"url": {
+					"raw": "localhost:8080/api/recommendation/?uuid=b12408f0-d239-49cb-8098-c88f76fad069&research_interest=Education&sim_weight=0.3&page_size=5&page_number=0",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"recommendation",
+						""
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "b12408f0-d239-49cb-8098-c88f76fad069",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "research_interest",
+							"value": "Education",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "sim_weight",
+							"value": "0.3",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "page_size",
+							"value": "5",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "page_number",
+							"value": "0",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get User List",
+			"request": {
+				"url": {
+					"raw": "localhost:8080/api/users/?page_number=0&page_size=2",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"users",
+						""
+					],
+					"query": [
+						{
+							"key": "page_number",
+							"value": "0",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "page_size",
+							"value": "2",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

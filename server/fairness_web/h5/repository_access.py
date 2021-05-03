@@ -8,16 +8,28 @@ class RepoAccess():
     def __init__(self, h5file):
         self.h5file = h5file
 
-    def get_all_users(self):
+    def get_all_users(self, start_index, end_index):
+
+        counter = 0
+        all_user = []
         user_array_tbl = self.h5file.root.user_info
 
-        all_user = []
         for x in user_array_tbl.iterrows():
-            all_user.append({
-                'uuid': x['uuid'].decode('UTF-8'),
-                'name': x['name'].decode('UTF-8'),
-                'research_interest': x['research_interests'].decode('UTF-8')
-            })
+
+            if counter < start_index:
+                counter += 1
+                continue
+            elif counter == end_index:
+                break
+            elif counter >= start_index and counter < end_index:
+                counter += 1
+                all_user.append({
+                    'uuid': x['uuid'].decode('UTF-8'),
+                    'name': x['name'].decode('UTF-8'),
+                    'gender': x['gender'].decode('UTF-8'),
+                    'nationality': x['nationality'].decode('UTF-8'),
+                    'research_interests': [a for a in x['research_interests'] if len(a) != 0]
+                })
         return all_user
 
     def get_similarity(self, uuid, research_interest):
@@ -33,7 +45,7 @@ class RepoAccess():
             user_array = row['users']
 
         sim_tbl = self.h5file.root.similarity
-        for row in sim_tbl.where("(uuid == '" + uuid + "') & (research_interest == '" + research_interest + "')"):
+        for row in sim_tbl.where("uuid == '" + uuid + "'"):
             cos_sim = row['cosine_sim']
             hop_dis = row['hop_distance']
 
@@ -42,11 +54,11 @@ class RepoAccess():
 
             for row in user_tbl.where("uuid == '" + str(user_array[i].decode('UTF-8')) + "'"):
 
-                obj = ReturnedObject(row['uuid'].decode('UTF-8'),
-                                     row['first_name'].decode('UTF-8'),
-                                     row['last_name'].decode('UTF-8'),
-                                     row['affiliation'].decode('UTF-8'),
-                                     row['research_interest'].decode('UTF-8'),
+                obj = ResponseObject(row['uuid'].decode('UTF-8'),
+                                     row['name'].decode('UTF-8'),
+                                     '',
+                                     row['research_interests'],
+                                     row['nationality'].decode('UTF-8'),
                                      row['gender'].decode('UTF-8'),
                                      hop_dis[i],
                                      cos_sim[i])
@@ -57,18 +69,18 @@ class RepoAccess():
     def reload_database(self, user_file, sim_file):
         converter = Converter(self.h5file)
         converter.convert_to_user_info(user_file)
-        # converter.convert_to_similarity_file(sim_file)
+        converter.convert_to_similarity_file(sim_file)
         return
 
 
-class ReturnedObject():
+class ResponseObject():
 
-    def __init__(self, uuid, first_name, last_name, affiliation, research_interest, gender, hop_distance, cosine_sim):
+    def __init__(self, uuid, name, affiliation, research_interests, nationality, gender, hop_distance, cosine_sim):
         self.uuid = uuid
-        self.first_name = first_name
-        self.last_name = last_name
+        self.name = name
         self.affiliation = affiliation
-        self.research_interest = research_interest
+        self.research_interests = research_interests
         self.gender = gender
+        self.nationality = nationality
         self.hop_distance = hop_distance
         self.cosine_sim = cosine_sim

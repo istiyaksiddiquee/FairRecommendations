@@ -15,38 +15,107 @@ class ResearchInterest(APIView):
 
     def get(self, request, format=None):
         research_interest = [
-            'History',
-            'Religion',
-            'Anthropology',
-            'Ethnology',
-            'Musicology',
             'Education',
-            'Digital Education',
-            'Digital Libraries',
-            'Digital Humanities',
-            'Political Sciences',
-            'Gender Studies',
-            'Cultural Studies',
+            'History',
+            'Digital education', 
+            'Digital education, Cultural studies', 
+            'Education,Digital education',
+            'Education, Cultural studies', 
+            'Education, Digital education', 
+            'Political sciences',
+            'Political sciences, Education', 
+            'Cultural studies', 
+            'Cultural studies,History,Religion',
+            'Cultural studies,Digital libraries',
+            'Humanities', 
+            'Digital humanities',
+            'History,Education', 
+            'History, Political sciences', 
+            'History, Cultural studies',
+            'Eductaion,History', 
+            'Information retrieval',
+            'Information retrieval,Recommender systems',
+            'Knowledge graphs',
+            'Recommender systems, Information Retrieval', 
+            'Information retrieval, Natural language processing',
+            'Digital libraries, Education', 'Data science', 
+            'Machine learning',
+            'Recommender systems', 
+            'Natural language processing',
+            'User Modeling', 
+            'User Modeling, Natural language processing',
+            'Knowledge graphs, Machine learning',
+            'User Modeling, Recommender systems',
+            'Machine learning, Translation science',
+            'User Modeling, Natural language processing, Recommender systems',
+            'Recommender systems, Knowledge graphs',
+            'Knowledge graphs, Natural language processing', 
             'Usability',
-            'Project Management',
-            'Information Retrieval',
-            'Natural Language Processing',
-            'Translation Science',
-            'Data Science',
-            'Legal Artificial Intelligence',
-            'Artificial Intelligence',
-            'Machine Learning',
-            'Recommender Systems',
-            'Knowledge Graphs'
+            'Information retrieval, Cultural studies',
+            'Natural langauge processing',
+            'Machine learning, Knowledge graphs',
+            'Cultural studies, Information retrieval',
+            'Knowledge graphs, Natural language processing, Information retrieval',
+            'Translation science, Information retrieval',
+            'Machine learning, Natural language processing',
+            'Information retrieval, User Modeling',
+            'Natural language processing, Information Retrieval',
+            'Natural language processing, Information retrieval',
+            'Digital libraries', 
+            'Digital humanities, Digital education',
+            'Digital education,Digital libraries', 
+            'History, Education',
+            'Environment, Political sciences', 
+            'Environment', 'Religion',
+            'Psychology', 
+            'Education, Digital Education', 
+            'Ethnology',
+            'Political sciences,History', 
+            'History,Cultural studies',
+            'History,Political sciences.', 
+            'Gender studies',
+            'Religion, Education', 
+            'Religion, Political sciences',
+            'Religion, Cultural studies',
+            'Virtual Reality',
+            'Legal artificial intelligence', 'Recommender systems, Education'
+            'Legal artificial intelligence, Information retrieval, Natural language processing',
         ]
+
         return Response({'research_interests': research_interest})
 
 
 class User(APIView):
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('page_size', openapi.IN_QUERY,
+                              "Size of each page", type=openapi.TYPE_STRING),
+            openapi.Parameter('page_number', openapi.IN_QUERY,
+                              "Number of each page, starting from 0", type=openapi.TYPE_STRING),
+        ], responses={
+            200: openapi.Response(
+                'Successful Response with array of users'
+            ),
+            400: openapi.Response(
+                'Malformed URL Request'
+            ),
+        },
+        tags=[
+            'Users'
+        ]
+    )
     def get(self, request, format=None):
+
+        req_page_size = request.GET['page_size']
+        req_page_number = request.GET['page_number']
+
+        if req_page_size != None and req_page_number != None:
+            if req_page_size.isnumeric() != True or req_page_number.isnumeric() != True:
+                return Response().status_code(400)
+
         recommendation_service = RecommendationService()
-        output = recommendation_service.get_all_users()
+        output = recommendation_service.get_all_users(req_page_number, req_page_size)
         return Response(output)
 
 
@@ -92,8 +161,7 @@ class Recommendation(APIView):
                 return Response().status_code(400)
 
         recommendation_service = RecommendationService()
-        output = recommendation_service.get_recommendation(
-            req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
+        output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
         return Response(output)
 
 
