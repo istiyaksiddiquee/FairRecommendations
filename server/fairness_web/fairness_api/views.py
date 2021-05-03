@@ -113,6 +113,9 @@ class User(APIView):
         if req_page_size != None and req_page_number != None:
             if req_page_size.isnumeric() != True or req_page_number.isnumeric() != True:
                 return Response().status_code(400)
+        else:
+            req_page_size = 902
+            req_page_number = 0
 
         recommendation_service = RecommendationService()
         output = recommendation_service.get_all_users(req_page_number, req_page_size)
@@ -162,7 +165,11 @@ class Recommendation(APIView):
 
         recommendation_service = RecommendationService()
         output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
-        return Response(output)
+
+        if output == 1:
+            return Response("Internal Server Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+        return Response(output, status=status.HTTP_200_OK)
 
 
 class DatabaseReset(APIView):

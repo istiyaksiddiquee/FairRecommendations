@@ -51,18 +51,18 @@ class RepoAccess():
 
         user_tbl = self.h5file.root.user_info
         for i in range(len(user_array)):
+            if len(user_array[i]) != 0:
+                for row in user_tbl.where("uuid == '" + str(user_array[i].decode('UTF-8')) + "'"):
 
-            for row in user_tbl.where("uuid == '" + str(user_array[i].decode('UTF-8')) + "'"):
-
-                obj = ResponseObject(row['uuid'].decode('UTF-8'),
-                                     row['name'].decode('UTF-8'),
-                                     '',
-                                     row['research_interests'],
-                                     row['nationality'].decode('UTF-8'),
-                                     row['gender'].decode('UTF-8'),
-                                     hop_dis[i],
-                                     cos_sim[i])
-                return_array.append(obj)
+                    obj = ResponseObject(row['uuid'].decode('UTF-8'),
+                                        row['name'].decode('UTF-8'),
+                                        '',
+                                        row['research_interests'],
+                                        row['nationality'].decode('UTF-8'),
+                                        row['gender'].decode('UTF-8'),
+                                        hop_dis[i],
+                                        cos_sim[i])
+                    return_array.append(obj)
 
         return return_array
 

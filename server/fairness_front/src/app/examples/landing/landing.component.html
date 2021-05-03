@@ -63,7 +63,7 @@
                             <div class="card-body" (click)="clickResponse1()">
                                 <div class="row">
                                     <div class="col-md-6 pull-left">
-                                        <h5 class="card-title"> {{ item.first_name }} {{ item.last_name }} </h5>
+                                        <h5 class="card-title"> {{ item.name }} </h5>
                                     </div>
                                     <div class="col-md-6 pull-right">
                                         <label class="pull-right"> <h6>{{item.score}}, {{item.cosine_sim}}, {{item.hop_distance}}</h6></label>
@@ -72,9 +72,9 @@
 
                                 <div class="row">
                                     <div class="col-md-12 pull-left">
-                                        <label> {{ item.affiliation }}, {{ item.research_interest }} </label>
+                                        <label>{{ item.research_interests }} </label>
                                         <br/>
-                                        <label> {{ item.gender }}</label>
+                                        <label> {{ item.gender }}, {{ item.nationality }} </label>
                                     </div>
                                 </div>
                             </div>
@@ -103,7 +103,7 @@
                             <div class="card-body" (click)="clickResponse1()">
                                 <div class="row">
                                     <div class="col-md-6 pull-left">
-                                        <h5 class="card-title"> {{ item.first_name }} {{ item.last_name }} </h5>
+                                        <h5 class="card-title"> {{ item.name }} </h5>
                                     </div>
                                     <div class="col-md-6 pull-right">
                                         <label class="pull-right"> <h6>{{item.score}}, {{item.cosine_sim}}, {{item.hop_distance}}</h6></label>
@@ -112,9 +112,9 @@
 
                                 <div class="row">
                                     <div class="col-md-12 pull-left">
-                                        <label> {{ item.affiliation }}, {{ item.research_interest }} </label>
+                                        <label> {{ item.research_interests }} </label>
                                         <br/>
-                                        <label> {{ item.gender }} </label>
+                                        <label> {{ item.gender }}, {{ item.nationality }} </label>
                                     </div>
                                 </div>
 

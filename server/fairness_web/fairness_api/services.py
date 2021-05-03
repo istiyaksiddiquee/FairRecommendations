@@ -17,11 +17,12 @@ class Information(Enum):
 class RecommendationService():
 
     def __init__(self):
-        self.read_mode = pt.open_file(Information.DATABASE_PATH.value + '/' + Information.DATABASE_NAME.value, 'r')
+        self.read_mode = pt.open_file(
+            Information.DATABASE_PATH.value + '/' + Information.DATABASE_NAME.value, 'r')
         self.access = RepoAccess(self.read_mode)
 
     def get_all_users(self, page_number, page_size):
-        
+
         start_index = int(page_number) * int(page_size)
         end_index = start_index + int(page_size)
 
@@ -30,27 +31,35 @@ class RecommendationService():
         return output
 
     def get_recommendation(self, req_uuid, req_research_interest, weight_for_similarity, req_page_size, req_page_number):
-        
-        obj_array = self.access.get_similarity(req_uuid, req_research_interest)
+
+        try:
+            obj_array = self.access.get_similarity(req_uuid, req_research_interest)
+        except IndexError:
+            self.read_mode.close()
+            return 1
+
         self.read_mode.close()
 
         scored_items = []
         for item in obj_array:
-            scored_items.append(ResponseStructure(
-                                item.uuid,
-                                item.name,
-                                item.affiliation,
-                                [a for a in item.research_interests if len(a) != 0],
-                                item.gender,
-                                item.nationality,
-                                round(item.hop_distance, 3),
-                                round(float(item.cosine_sim), 3),
-                                round((float(weight_for_similarity)*item.hop_distance + (1-float(weight_for_similarity)) * item.cosine_sim), 3)
-                            ))
-        
+            if req_research_interest.encode(encoding='ascii') in item.research_interests:
+                scored_items.append(ResponseStructure(
+                                    item.uuid,
+                                    item.name,
+                                    item.affiliation,
+                                    [a for a in item.research_interests if len(a) != 0],
+                                    item.gender,
+                                    item.nationality,
+                                    round(item.hop_distance, 3),
+                                    round(float(item.cosine_sim), 3),
+                                    round((float(weight_for_similarity)*item.hop_distance +
+                                          (1-float(weight_for_similarity)) * item.cosine_sim), 3)
+                                    ))
+
         with_bias = self.sort_biased_array(scored_items)
         bias_corrected = self.sort_bias_processed_array(scored_items)
-        bias_corrected = self.add_reference_to_bias_corrected_data(with_bias, bias_corrected)
+        bias_corrected = self.add_reference_to_bias_corrected_data(
+            with_bias, bias_corrected)
 
         if req_page_size != None and req_page_number != None:
             start_index = int(req_page_size) * int(req_page_number)
@@ -127,14 +136,15 @@ class DatabaseResetService():
         person_json_path = Information.DATABASE_PATH.value + '/' + person_json
         similarity_json_path = Information.DATABASE_PATH.value + '/' + similarity_json
         pickle_file_path = Information.DATABASE_PATH.value + '/' + pickle_file_name
-        file_path_with_mapped_research_interest = Information.DATABASE_PATH.value + '/' + Information.FILE_WITH_MAPPED_RESEARCH_INTEREST.value
+        file_path_with_mapped_research_interest = Information.DATABASE_PATH.value + \
+            '/' + Information.FILE_WITH_MAPPED_RESEARCH_INTEREST.value
 
         # start = time.time()
-        # data_service = Data(pickle_file_path, file_path_with_mapped_research_interest)
+        data_service = Data(pickle_file_path, file_path_with_mapped_research_interest)
         # print("returned from data service: " + str(time.time() - start)) # took 2463.6140756607056 seconds / 41.0602346 minutes
 
         # scores json size is 16.7MB
-        # person json size is 1.01MB 
+        # person json size is 1.01MB
         # hdf db size is 1.86 MB !! without any compression
 
         # with open(person_json_path, 'w', encoding='utf-8') as f:
