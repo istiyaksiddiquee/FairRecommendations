@@ -3,6 +3,13 @@
 This is the github repository for the scientific team project on 'Explainable and Fair Recommendations in Research'. 
 
 # Instructions
-Run `python -m pip install -r requirements.txt` to install the requirements. Please note that Gensim requires Visual Studio Code Build Tools, please manually install it before executing the aforementioned command. 
+To get the project up and running, use `docker-compose -f ./server/docker-compose.yaml up --build` command. 
 
-To get the database up and running, use `docker-compose -f ./docker_setup/docker-compose.yaml up` command. Furthermore, you need to load the dataset manually using `apoc load` command.
+
+To access the UI visit: `http://localhost`. 
+To access the backend, visit `http://localhost:8080`. 
+
+
+To access API documentation, running on swagger, use any othe following URLs
+- `http://localhost:8080/swagger/`
+- `http://localhost:8080/redoc/`
