@@ -4,22 +4,39 @@ import { Injectable } from '@angular/core';
 @Injectable({providedIn: 'root'})
 export class LandingService {
     
-    private userURL = "http://localhost:8080/api/users/?page_size=902&page_number=0";
-    private recommendationURL = "http://localhost:8080/api/recommendation/?uuid=b12408f0-d239-49cb-8098-c88f76fad069&research_interest=Information retrieval&sim_weight=0.3&page_size=2&page_number=0";
-
+    private BASE_URL: string = "http://localhost:8080/api/";
+    
     constructor(private http: HttpClient) {}
 
-    getAllUsers() {
+    getAllUsers(page_number, page_size) {
+
+        const userURL: string = this.BASE_URL + `users/?page_size=${ page_size }&page_number=${ page_number }`;
+
         try {
-            return this.http.get(this.userURL);
+            return this.http.get(userURL);
         } catch(err) {
             console.log(err);
         }
     }
 
-    getInformation() {
+    getResearchInterestList() {
+
+        const researchInterestURL:string = this.BASE_URL + "researchInterests/";
+
         try {
-            return this.http.get(this.recommendationURL);
+            return this.http.get(researchInterestURL);
+        } catch(err) {
+            console.log(err);
+        }
+    }
+    
+    getRecommendation(uuid, research_interest, sim_weight, page_number, page_size) {
+
+        const path: string = `recommendation/?uuid=${ uuid }&research_interest=${ research_interest }&sim_weight=${ sim_weight }&page_size=${ page_size }&page_number=${ page_number }`;
+        const recommendationURL: string = this.BASE_URL + path;
+
+        try {
+            return this.http.get(recommendationURL);
         } catch(err) {
             console.log(err);
         }

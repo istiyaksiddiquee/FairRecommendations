@@ -11,88 +11,18 @@ from .services import DatabaseResetService
 
 
 class ResearchInterest(APIView):
-    """ Research Interest """
-
-    def get(self, request, format=None):
-        research_interest = [
-            'Education',
-            'History',
-            'Digital education', 
-            'Digital education, Cultural studies', 
-            'Education,Digital education',
-            'Education, Cultural studies', 
-            'Education, Digital education', 
-            'Political sciences',
-            'Political sciences, Education', 
-            'Cultural studies', 
-            'Cultural studies,History,Religion',
-            'Cultural studies,Digital libraries',
-            'Humanities', 
-            'Digital humanities',
-            'History,Education', 
-            'History, Political sciences', 
-            'History, Cultural studies',
-            'Eductaion,History', 
-            'Information retrieval',
-            'Information retrieval,Recommender systems',
-            'Knowledge graphs',
-            'Recommender systems, Information Retrieval', 
-            'Information retrieval, Natural language processing',
-            'Digital libraries, Education', 'Data science', 
-            'Machine learning',
-            'Recommender systems', 
-            'Natural language processing',
-            'User Modeling', 
-            'User Modeling, Natural language processing',
-            'Knowledge graphs, Machine learning',
-            'User Modeling, Recommender systems',
-            'Machine learning, Translation science',
-            'User Modeling, Natural language processing, Recommender systems',
-            'Recommender systems, Knowledge graphs',
-            'Knowledge graphs, Natural language processing', 
-            'Usability',
-            'Information retrieval, Cultural studies',
-            'Natural langauge processing',
-            'Machine learning, Knowledge graphs',
-            'Cultural studies, Information retrieval',
-            'Knowledge graphs, Natural language processing, Information retrieval',
-            'Translation science, Information retrieval',
-            'Machine learning, Natural language processing',
-            'Information retrieval, User Modeling',
-            'Natural language processing, Information Retrieval',
-            'Natural language processing, Information retrieval',
-            'Digital libraries', 
-            'Digital humanities, Digital education',
-            'Digital education,Digital libraries', 
-            'History, Education',
-            'Environment, Political sciences', 
-            'Environment', 'Religion',
-            'Psychology', 
-            'Education, Digital Education', 
-            'Ethnology',
-            'Political sciences,History', 
-            'History,Cultural studies',
-            'History,Political sciences.', 
-            'Gender studies',
-            'Religion, Education', 
-            'Religion, Political sciences',
-            'Religion, Cultural studies',
-            'Virtual Reality',
-            'Legal artificial intelligence', 'Recommender systems, Education'
-            'Legal artificial intelligence, Information retrieval, Natural language processing',
-        ]
-
-        return Response({'research_interests': research_interest})
-
-
-class User(APIView):
+    """ Methods related to obtaining research interests available in the system """
 
     @swagger_auto_schema(
+        operation_summary="Returns a list of available Research Interests",
+        operation_description="""This is a GET method that does not require any other parameter. Upon invocation, \
+        it will returns a list of strings where each string represents a research \
+            interest that is available and applicable in the system.""",
         manual_parameters=[
-            openapi.Parameter('page_size', openapi.IN_QUERY,
-                              "Size of each page", type=openapi.TYPE_STRING),
-            openapi.Parameter('page_number', openapi.IN_QUERY,
-                              "Number of each page, starting from 0", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, required=False,
+                              description="Size of each page", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='page_number', in_=openapi.IN_QUERY, required=False,
+                              description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
         ], responses={
             200: openapi.Response(
                 'Successful Response with array of users'
@@ -102,7 +32,65 @@ class User(APIView):
             ),
         },
         tags=[
-            'Users'
+            'Listing Research Interests'
+        ]
+    )
+    def get(self, request, format=None):
+        
+        research_interest = [
+            'Anthropology',
+            'Artificial Intelligence',
+            'Climate Research',
+            'Cultural Studies',
+            'Data Science',
+            'Digital Education',
+            'Digital Humanities',
+            'Digital Libraries',
+			'Economics'
+            'Education',
+			'Environment',
+            'Ethnology',
+            'Gender Studies',
+            'History',
+            'Information retrieval', # TODO: change this to Retrieval with capital R
+            'Knowledge Graphs',
+            'Legal Artificial Intelligence',
+            'Machine Learning',
+            'Musicology',
+            'Natural Language Processing',
+			'Peace & Conflict Studies', 
+            'Political Sciences',
+            'Project Management',
+            'Recommender Systems',
+            'Religion',
+            'Translation Science',
+            'Usability'
+        ]
+
+        return Response({'research_interests': research_interest})
+
+
+class User(APIView):
+
+    @swagger_auto_schema(
+        operation_summary="Returns a list of Users",
+        operation_description="""This is a GET method that returns a list of Users. It can be used with or without the pagination parameters. \
+            Please see method parameters for information regarding keys for pagination parameters.""",
+        manual_parameters=[
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, required=False,
+                              description="Size of each page", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='page_number', in_=openapi.IN_QUERY, required=False,
+                              description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
+        ], responses={
+            200: openapi.Response(
+                'Successful Response with array of users'
+            ),
+            400: openapi.Response(
+                'Malformed URL Request'
+            ),
+        },
+        tags=[
+            'Listing Available Users'
         ]
     )
     def get(self, request, format=None):
@@ -125,17 +113,22 @@ class User(APIView):
 class Recommendation(APIView):
 
     @swagger_auto_schema(
+        operation_summary="Returns calculated Recommendations",
+        operation_description="""This is a GET method that returns two lists of Recommendations. One of these list possess uncorrected, raw recommendation. \
+        The other one presents a bias corrected version of the raw recommendation. They have a descriptive key that can be found in the responses section. \
+        However, this method can be used in conjunction with the pagination parameter. Please see details on the parameters section. Furthermore, please note \
+        that the uuid, research interest, and similarity weight paramteres are mandatory here.""",
         manual_parameters=[
-            openapi.Parameter('uuid', openapi.IN_QUERY,
-                              "UUID of user", type=openapi.TYPE_STRING),
-            openapi.Parameter('research_interest', openapi.IN_QUERY,
-                              "Research Interest from predefined list of Research Interest", type=openapi.TYPE_STRING),
-            openapi.Parameter('sim_weight', openapi.IN_QUERY,
-                              "Preference indicative weight for cosine similarity", type=openapi.TYPE_STRING),
-            openapi.Parameter('page_size', openapi.IN_QUERY,
-                              "Size of each page", type=openapi.TYPE_STRING),
-            openapi.Parameter('page_number', openapi.IN_QUERY,
-                              "Number of each page, starting from 0", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='uuid', in_=openapi.IN_QUERY, required=True,
+                              description="UUID of user", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='research_interest', in_=openapi.IN_QUERY, required=True,
+                              description="Research Interest from predefined list of Research Interest", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='sim_weight', in_=openapi.IN_QUERY, required=True,
+                              description="Preference indicative weight for cosine similarity", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, required=False,
+                              description="Size of each page", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='page_number', in_=openapi.IN_QUERY, required=False,
+                              description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
         ], responses={
             200: openapi.Response(
                 'Successful Response with bias and bias corrected list',
@@ -146,7 +139,7 @@ class Recommendation(APIView):
             ),
         },
         tags=[
-            'Recommendation'
+            'Generating Recommendation'
         ]
     )
     def get(self, request, format=None):
@@ -175,13 +168,17 @@ class Recommendation(APIView):
 class DatabaseReset(APIView):
 
     @swagger_auto_schema(
+        operation_summary="URL for regenerating database",
+        operation_description="""Sometimes, due to the change in the database, we shall feel the necessity of repopulating the database. This URL is \
+        for that purpose. Please note that it will take approximately 40 minutes to complete, so make sure that you know what you are doing, before invoking this URL. \
+        The method paramters are mentioned""",
         manual_parameters=[
-            openapi.Parameter('person_json', openapi.IN_QUERY,
-                              "name of person json file", type=openapi.TYPE_STRING),
-            openapi.Parameter('similarity_json', openapi.IN_QUERY,
-                              "name of similarity json file", type=openapi.TYPE_STRING),
-            openapi.Parameter('pickle_file_name', openapi.IN_QUERY,
-                              "name of database pickle file", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='person_json', in_=openapi.IN_QUERY, required=False,
+                              description="name of person json file", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='similarity_json', in_=openapi.IN_QUERY, required=False, 
+                              description="name of similarity json file", type=openapi.TYPE_STRING),
+            openapi.Parameter(name='pickle_file_name', in_=openapi.IN_QUERY, required=True,
+                              description="name of database pickle file", type=openapi.TYPE_STRING),
         ], responses={
             200: openapi.Response(
                 'Successful!'
@@ -191,7 +188,7 @@ class DatabaseReset(APIView):
             ),
         },
         tags=[
-            'Database'
+            'Database Reset'
         ]
     )
     def get(self, request, format=None):
@@ -214,6 +211,7 @@ class DatabaseReset(APIView):
 
         db_rest_svc = DatabaseResetService()
         return_code = db_rest_svc.recreate_db(req_person, req_similarity, req_pickle_file_name)
+        
 
         if return_code != 0:
             return Response(status=status.HTTP_400_BAD_REQUEST)

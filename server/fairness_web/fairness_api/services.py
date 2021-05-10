@@ -33,7 +33,8 @@ class RecommendationService():
     def get_recommendation(self, req_uuid, req_research_interest, weight_for_similarity, req_page_size, req_page_number):
 
         try:
-            obj_array = self.access.get_similarity(req_uuid, req_research_interest)
+            obj_array = self.access.get_similarity(
+                req_uuid, req_research_interest)
         except IndexError:
             self.read_mode.close()
             return 1
@@ -47,7 +48,8 @@ class RecommendationService():
                                     item.uuid,
                                     item.name,
                                     item.affiliation,
-                                    [a for a in item.research_interests if len(a) != 0],
+                                    [a for a in item.research_interests if len(
+                                        a) != 0],
                                     item.gender,
                                     item.nationality,
                                     round(item.hop_distance, 3),
@@ -70,7 +72,8 @@ class RecommendationService():
 
         output = {
             'with_bias': self.jsonify_recommendation(with_bias, True),
-            'bias_corrected': self.jsonify_recommendation(bias_corrected, False)
+            'bias_corrected': self.jsonify_recommendation(bias_corrected, False),
+            'length': len(scored_items)
         }
 
         return output
@@ -140,7 +143,8 @@ class DatabaseResetService():
             '/' + Information.FILE_WITH_MAPPED_RESEARCH_INTEREST.value
 
         # start = time.time()
-        data_service = Data(pickle_file_path, file_path_with_mapped_research_interest)
+        data_service = Data(
+            pickle_file_path, file_path_with_mapped_research_interest)
         # print("returned from data service: " + str(time.time() - start)) # took 2463.6140756607056 seconds / 41.0602346 minutes
 
         # scores json size is 16.7MB

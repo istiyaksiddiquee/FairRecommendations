@@ -48,8 +48,10 @@ class RepoAccess():
         for row in sim_tbl.where("uuid == '" + uuid + "'"):
             cos_sim = row['cosine_sim']
             hop_dis = row['hop_distance']
+        
 
         user_tbl = self.h5file.root.user_info
+        
         for i in range(len(user_array)):
             if len(user_array[i]) != 0:
                 for row in user_tbl.where("uuid == '" + str(user_array[i].decode('UTF-8')) + "'"):

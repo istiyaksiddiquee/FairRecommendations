@@ -1,58 +1,113 @@
 <div class="main">
 
     <div class="section text-center">
-        <div class="container">
+        <div style="margin-top: 50px;" class="container">
             <div class="row">
-                <div class="tim-title">
-                    <h2>Inputs</h2>
+                <div style="text-align: left;">
+                    
+                    <h2>Welcome!</h2> <br/>
+                    <p style="text-align: justify;">
+                        
+                        This is the project page for the  Scientific Team Project on Fair Recommendation in Research. <br/><br/><br/><br/>
+                        
+                        This project is designed to study the impact of bias and fairness constraints that are featured most by contemporary literature. 
+                        Based on the dataset provided by Georg Eckert Institute for International Textbook Research, we want to show you a regular recommendation and a bias corrected version of the same recommendation. 
+                        Our hope is this experiement should help us understand the impact of these bias correction techniques. 
+
+                        <br/><br/><br/>
+
+                        Below, you will see some input that you must select in order play with this recommendation. Both the User Name field and the Research Interest field are searchable database 
+                        of all the available users and research interests. Furthermore, the preference slider will give us your preference value. If you say 0.4, we will consider you prefer to put 
+                        40% of the weight to similarity and 60% to distance. 
+                        <br/><br/><br/>
+
+                    </p>
                 <br/>
+                
+                <h3>Inputs for Recommendation</h3>
+                <br/><br/><br/>
                 </div>
             </div>
+
             <div class="row">
-                <div class="col-md-2">
-                    <div ngbDropdown class="dropdown" placement="bottom-middle">
-                        <a class="nav-link" id="dropdownBasic1">
-                            <button class="btn btn-secondary btn-lg" ngbDropdownToggle type="button">
-                                User
-                            </button>
-                        </a>
-                        <div *ngFor="let item of with_bias" >
-                            <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="dropdown-danger dropdown-menu-right">
-                                <a class="dropdown-item">{{ item.first_name }} {{ item.last_name }}</a>
-                            </div>
-                            <br/>
+                <div style="margin-right: 30px;"  class="col-md-4">
+                    <div style="display: inline-flex;" class="row">
+                        <div class="col-md-3" style="padding-left: 0px; padding-right: 0px; position: relative; left: 5px; top: 10px;">
+                            User Name
+                        </div>
+                        <div class="ng-autocomplete col-md-5">
+                            <ng-autocomplete
+                              [data]="users"
+                              [searchKeyword]="keyword"
+                              placeholder="Search for User Name"
+                              (selected)='userSelectEvent($event)'
+                              (inputChanged)='userOnChangeSearch($event)'
+                              (inputFocused)='userOnFocused($event)'
+                              historyIdentifier="users"
+                              [itemTemplate]="itemTemplate"
+                              [notFoundTemplate]="notFoundTemplate">
+                            </ng-autocomplete>
+                          
+                            <ng-template #itemTemplate let-item>
+                              <a [innerHTML]="item.name"></a>
+                            </ng-template>
+                          
+                            <ng-template #notFoundTemplate let-notFound>
+                              <div [innerHTML]="notFound"></div>
+                            </ng-template>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-3">
-                    <div ngbDropdown class="dropdown" placement="bottom-middle">
-                        <a class="nav-link" id="dropdownBasic1">
-                            <button class="btn btn-secondary btn-lg" ngbDropdownToggle type="button">
-                                Research Interest
-                            </button>
-                        </a>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="dropdown-danger dropdown-menu-right">
-                            <a class="dropdown-item">Action - 1</a>
-                            <a class="dropdown-item">Another Action</a>
-                            <a class="dropdown-item">Something else is here</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item">Separated link</a>
+                <div class="col-md-4">
+                    <div style="display: inline-flex;" class="row">
+                        <div class="col-md-3">
+                            <label>Research Interest</label>
+                        </div>
+                        <div class="ng-autocomplete col-md-7" style="width: 300px;">
+                            
+                            <ng-autocomplete
+                              [data]="research_interests"
+                              [searchKeyword]="keyword"
+                              placeholder="Search for Research ..."
+                              (selected)='interestSelectEvent($event)'
+                              (inputChanged)='interestOnChangeSearch($event)'
+                              (inputFocused)='interestOnFocused($event)'
+                              historyIdentifier="research_interests"
+                              [itemTemplate]="itemTemplate"
+                              [notFoundTemplate]="notFoundTemplate">
+                            </ng-autocomplete>
+                          
+                            <ng-template #itemTemplate let-item>
+                              <a [innerHTML]="item.name"></a>
+                            </ng-template>
+                          
+                            <ng-template #notFoundTemplate let-notFound>
+                              <div [innerHTML]="notFound"></div>
+                            </ng-template>
                         </div>
                     </div>
                 </div>
-
                 <div class="col-md-3">
                     <label>Preference: Similarity - Distance</label>
-                    <nouislider [connect]="false" [min]="0" [max]="100" [step]="1" [(ngModel)]="simpleSlider"
-                        [tooltips]="false" class="slider"></nouislider>
+                    <nouislider [connect]="false" [min]="0" [max]="1" [step]="0.01" [(ngModel)]="simpleSlider"
+                        [tooltips]="true" [behaviour]="snap" class="slider"></nouislider>
                 </div>
-                <div class="col-md-3">
-                    <button (click)="loadData()" type="button" class="btn btn-default btn-lg">Get Suggestions</button>
-                </div>
+    
             </div>
             <br /><br />
             <div class="row">
+                <div class="col-md-12">
+                    <button (click)="loadRecommendationData()" 
+                            type="button" 
+                            *ngIf="selected_user != null && selected_interest != null"
+                            class="btn btn-default btn-lg">
+                        Get Suggestions
+                    </button>
+                </div>
+            </div>
+            <br /><br />
+            <div id="result_section" class="row" hidden>
                 <div class="col-md-5">
                     <div class="row">
                         <label class="pull-left"><h4>Before Bias Correction</h4></label>
@@ -60,7 +115,7 @@
                     
                     <div class="row">
                         <div *ngFor="let item of with_bias" class="card col-md-12">
-                            <div class="card-body" (click)="clickResponse1()">
+                            <div class="card-body" (click)="clickResponse1(item)">
                                 <div class="row">
                                     <div class="col-md-6 pull-left">
                                         <h5 class="card-title"> {{ item.name }} </h5>
@@ -78,17 +133,18 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div id="infoDiv1" class="cardInfo pull-right" style="width: 18rem;" hidden>
-                            <div class="card-body">
-                                <h5 class="card-title">Card title</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                                <p class="card-text">Some quick example text to build on the card title and make up the bulk
-                                    of the card's content.</p>
-                                <a href="#" class="card-link">Card link</a>
-                                <a href="#" class="card-link">Another link</a>
+                            <div id="{{ item.uuid }}-biased" class="cardInfo pull-right" style="width: 18rem;" hidden>
+                                <div class="card-body">
+                                    <h5 id= "div_1_title"class="card-title">Card title</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk
+                                        of the card's content.</p>
+                                    <a href="#" class="card-link">Card link</a>
+                                    <a href="#" class="card-link">Another link</a>
+                                </div>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -100,7 +156,7 @@
                     </div>
                     <div class="row">
                         <div *ngFor="let item of bias_corrected" class="card col-md-12">
-                            <div class="card-body" (click)="clickResponse1()">
+                            <div class="card-body" (click)="clickResponse2(item)">
                                 <div class="row">
                                     <div class="col-md-6 pull-left">
                                         <h5 class="card-title"> {{ item.name }} </h5>
@@ -126,17 +182,18 @@
                                 </div>
 
                             </div>
-                        </div>
-                        <div id="infoDiv2" class="cardInfo pull-right" style="width: 18rem;" hidden>
-                            <div class="card-body">
-                                <h5 class="card-title">Card title</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                                <p class="card-text">Some quick example text to build on the card title and make up the bulk
-                                    of the card's content.</p>
-                                <a href="#" class="card-link">Card link</a>
-                                <a href="#" class="card-link">Another link</a>
+                            <div id="{{ item.uuid }}-corrected" class="cardInfo pull-right" style="width: 18rem;" hidden>
+                                <div class="card-body">
+                                    <h5 class="card-title">Card title</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk
+                                        of the card's content.</p>
+                                    <a href="#" class="card-link">Card link</a>
+                                    <a href="#" class="card-link">Another link</a>
+                                </div>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -144,8 +201,8 @@
         </div>
 
         <div class="row">
-            <div class="col-md-12">
-                <ngb-pagination [collectionSize]="100" [(page)]="page" [maxSize]="5" [rotate]="true">
+            <div class="col-md-12" id="pagination_div" hidden>
+                <ngb-pagination (pageChange)="onPageChange($event)" [collectionSize]="collection_size" [(page)]="page" [maxSize]="5" [rotate]="true">
                 </ngb-pagination>
             </div>
         </div>

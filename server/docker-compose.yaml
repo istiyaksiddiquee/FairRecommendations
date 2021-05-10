@@ -10,13 +10,13 @@ services:
     command: python /code/manage.py runserver 0.0.0.0:8080
     ports:
       - "8080:8080"
-  fairness_front:
-    container_name: fair_front
-    image: fairness_project_front:0.1.0
-    build:
-      context: ./fairness_front
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    depends_on: 
-      - fairness_web
+  # fairness_front:
+  #   container_name: fair_front
+  #   image: fairness_project_front:0.1.0
+  #   build:
+  #     context: ./fairness_front
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "80:80"
+  #   depends_on: 
+  #     - fairness_web

@@ -8,12 +8,15 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { LandingComponent } from './landing/landing.component';
 
+import {AutocompleteLibModule} from 'angular-ng-autocomplete';
+
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
         NgbModule,
         NouisliderModule,
+        AutocompleteLibModule,
         HttpClientModule,
     ],
     declarations: [
