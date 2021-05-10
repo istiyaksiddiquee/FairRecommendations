@@ -3,6 +3,8 @@
 This is the github repository for the scientific team project on 'Explainable and Fair Recommendations in Research'. 
 
 # Instructions
+This repository requires Docker to be installed in your system. For general installation instruction please visit `https://docs.docker.com/get-docker/`. 
+
 To get the project up and running, use `docker-compose -f ./server/docker-compose.yaml up --build` command. 
 
 
