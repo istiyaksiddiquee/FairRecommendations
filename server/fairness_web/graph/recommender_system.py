@@ -23,13 +23,11 @@ class Paper:
         self.pType = pType
 
     def __repr__(self):
+        return f'Paper(uuid:{self.uuid},"title":{self.title}, "abstract":{self.abstract}, "pType":{self.pType})'
 
 
-return f'Paper(uuid:{self.uuid},"title":{self.title}, "abstract":{self.abstract}, "pType":{self.pType})'
-
-
-def __str__(self):
-    return {"uuid": self.uuid, "title": self.title, "abstract": self.abstract, "pType": self.pType}
+    def __str__(self):
+        return {"uuid": self.uuid, "title": self.title, "abstract": self.abstract, "pType": self.pType}
 
 
 # return f'{{"uuid":{self.uuid},"title":{self.title}, "abstract":{self.abstract}}}'
@@ -284,58 +282,58 @@ class Data:
  \
                 reset_index(level=1).apply('-'.join, 1).add('-').sum(level=0).str[:-1]
 
-    s = pd.DataFrame({'authorsUUID': s.index, 'count': s.values})
+        s = pd.DataFrame({'authorsUUID': s.index, 'count': s.values})
 
-    temp = {}
-    ri_lst = []
-    cnt_lst = []
-    for cnt in range(0, len(s)):
-        x = (s['count'][cnt]).split("-")
-        ri_lst.append(x[0::2])
-        cnt_lst.append([int(i) for i in x[1::2]])
+        temp = {}
+        ri_lst = []
+        cnt_lst = []
+        for cnt in range(0, len(s)):
+            x = (s['count'][cnt]).split("-")
+            ri_lst.append(x[0::2])
+            cnt_lst.append([int(i) for i in x[1::2]])
 
-    research_int = {}
-    cnt = 0
+        research_int = {}
+        cnt = 0
 
-    for auth in s['authorsUUID']:
-        if auth not in research_int.keys():
-            lst = {}
-            lst['research_interest'] = (ri_lst[cnt])
-            lst['paper_count'] = (cnt_lst[cnt])
-            research_int[auth] = lst
-            cnt += 1
-        #   print(auth,research_int[auth])
+        for auth in s['authorsUUID']:
+            if auth not in research_int.keys():
+                lst = {}
+                lst['research_interest'] = (ri_lst[cnt])
+                lst['paper_count'] = (cnt_lst[cnt])
+                research_int[auth] = lst
+                cnt += 1
+            #   print(auth,research_int[auth])
 
-    persons = []
-    for node_id in self.personsIds:
-        # print(G.nodes[node_id])
-        if ("staffType" in G.nodes[node_id].keys() and G.nodes[node_id]['staffType'] == "Academic") or G.nodes[node_id][
-            'label'] == "External person":
+        persons = []
+        for node_id in self.personsIds:
+            # print(G.nodes[node_id])
+            if ("staffType" in G.nodes[node_id].keys() and G.nodes[node_id]['staffType'] == "Academic") or G.nodes[node_id][
+                'label'] == "External person":
 
-            nation = G.nodes[node_id]['nationality'] if (G.nodes[node_id]['label'] == "Person") else G.nodes[node_id][
-                'country']
+                nation = G.nodes[node_id]['nationality'] if (G.nodes[node_id]['label'] == "Person") else G.nodes[node_id][
+                    'country']
 
-            gen = G.nodes[node_id]['gender'] if (G.nodes[node_id]['label'] == "Person") else "Not-Given"
-            papers = []
-            for auth_id, researchOutput_id in search_edges(G, {"==": [("label",), "writtenBy"]}):
-                if (auth_id == node_id):
+                gen = G.nodes[node_id]['gender'] if (G.nodes[node_id]['label'] == "Person") else "Not-Given"
+                papers = []
+                for auth_id, researchOutput_id in search_edges(G, {"==": [("label",), "writtenBy"]}):
+                    if (auth_id == node_id):
 
-                    papers.append(Paper(uuid=researchOutput_id, title=G.nodes[researchOutput_id]['title'],
-                                        abstract=G.nodes[researchOutput_id]['abstract'],
-                                        pType=G.nodes[researchOutput_id]['type']))
-                    pc = []
-                    ri = []
-                    if node_id in research_int.keys():
-                        pc = research_int[node_id]['paper_count']
-                        ri = research_int[node_id]['research_interest']
-                    if node_id in self.research_interests_IDasKey.keys():
-                        x = list(set(np.unique(self.research_interests_IDasKey[node_id])) - set(ri))
-                        ri = ri + x
-                        pc = pc + list(np.zeros(len(x)))
-            persons.append(Person(uuid=node_id, name=G.nodes[node_id]['name'], nationality=nation, gender=gen,
-                                  research_interest=ri, paper_count=pc, papers=papers))
-    # print(len(persons))
-    return persons
+                        papers.append(Paper(uuid=researchOutput_id, title=G.nodes[researchOutput_id]['title'],
+                                            abstract=G.nodes[researchOutput_id]['abstract'],
+                                            pType=G.nodes[researchOutput_id]['type']))
+                        pc = []
+                        ri = []
+                        if node_id in research_int.keys():
+                            pc = research_int[node_id]['paper_count']
+                            ri = research_int[node_id]['research_interest']
+                        if node_id in self.research_interests_IDasKey.keys():
+                            x = list(set(np.unique(self.research_interests_IDasKey[node_id])) - set(ri))
+                            ri = ri + x
+                            pc = pc + list(np.zeros(len(x)))
+                persons.append(Person(uuid=node_id, name=G.nodes[node_id]['name'], nationality=nation, gender=gen,
+                                    research_interest=ri, paper_count=pc, papers=papers))
+                # print(len(persons))
+                return persons
 
 
 def write_scoresToList(self, sim_matrix, hop_matrix):
