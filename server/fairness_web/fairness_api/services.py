@@ -1,4 +1,6 @@
+import math
 import json
+import copy
 import os.path
 import tables as pt
 
@@ -59,7 +61,9 @@ class RecommendationService():
                                     ))
 
         with_bias = self.sort_biased_array(scored_items)
-        bias_corrected = self.sort_bias_processed_array(scored_items)
+
+        # bias_corrected = self.sort_bias_processed_array(scored_items)
+        bias_corrected = self.bias_correction(copy.deepcopy(with_bias), 0.3, page_size=req_page_size)
         bias_corrected = self.add_reference_to_bias_corrected_data(
             with_bias, bias_corrected)
 
@@ -77,6 +81,49 @@ class RecommendationService():
         }
 
         return output
+
+    def bias_correction(self, arr, expected_ratio, page_size):
+        chunks = math.ceil(len(arr)/int(page_size))
+        expected_female_count = expected_ratio * int(page_size)
+
+        for k in range(chunks):
+            m = k * int(page_size)
+            n = m + int(page_size)
+            female_count = 0
+
+            if m < len(arr): 
+                if n > len(arr):
+                    n = len(arr)
+
+                for i in range(m, n):
+                    if arr[i].gender.lower() == 'female':
+                        female_count += 1
+
+                if expected_female_count > female_count:
+                    females_to_import = expected_female_count - female_count
+                    # print(f"picking up {females_to_import} number of female")
+
+                    item_array = []
+                    position_array = []
+
+                    for i in range(n, len(arr)):
+                        if arr[i].gender.lower() == 'female':
+                            females_to_import -= 1
+                            position_array.append(i)
+                            item_array.append(copy.deepcopy(arr[i]))
+                            if females_to_import < 1:
+                                break
+
+                    if len(position_array) != 0:
+                        start_index = n-len(position_array)
+                        for i in range(len(position_array)):
+                            j = position_array[i]-1
+                            while j >= start_index:
+                                arr[j+1] = copy.deepcopy(arr[j])
+                                j -= 1
+                            arr[start_index] = copy.deepcopy(item_array[i])
+                            start_index += 1
+        return arr
 
     def sort_biased_array(self, arr):
         return sorted(arr, key=lambda x: x.score, reverse=True)

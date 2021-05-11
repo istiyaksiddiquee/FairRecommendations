@@ -9,13 +9,13 @@ import { LandingService } from "./landing.service";
 })
 export class LandingComponent implements OnInit {
   page = 1;
+  page_size = 10;
   simpleSlider = 0.4;
   
   keyword = 'name';
   selected_user = null;
   collection_size = null;
   selected_interest = null;
-  
   users = [];
   with_bias = [];
   bias_corrected = [];
@@ -47,12 +47,12 @@ export class LandingComponent implements OnInit {
 
   loadRecommendationData() {
     const page_number = 0;
-    const page_size = 10;
+    
     const sim_weight = this.simpleSlider;
     const uuid = this.selected_user.uuid; 
     const research_interest = this.selected_interest.name;
 
-    this.landingService.getRecommendation(uuid, research_interest, sim_weight, page_number, page_size).subscribe((data: any) => {
+    this.landingService.getRecommendation(uuid, research_interest, sim_weight, page_number, this.page_size).subscribe((data: any) => {
       this.with_bias = data.with_bias;
       this.bias_corrected = data.bias_corrected;
       this.collection_size = data.length;
@@ -85,12 +85,12 @@ export class LandingComponent implements OnInit {
     
     // Page Number starts from 1, but, in the server, we need it to start from 0. So, we are subtracting 1 from it.
     page_number--;
-    const page_size = 10;
+    
     const sim_weight = this.simpleSlider;
     const uuid = this.selected_user.uuid; 
     const research_interest = this.selected_interest.name;
 
-    this.landingService.getRecommendation(uuid, research_interest, sim_weight, page_number, page_size).subscribe((data: any) => {
+    this.landingService.getRecommendation(uuid, research_interest, sim_weight, page_number, this.page_size).subscribe((data: any) => {
       this.with_bias = data.with_bias;
       this.bias_corrected = data.bias_corrected;
       this.collection_size = data.length;
@@ -131,4 +131,14 @@ export class LandingComponent implements OnInit {
   //           console.log(err);
   //       }
   //   }
+
+  indexChekcer(k, l) {
+    console.log(k, l);
+    if (k - ((this.collection_size * (this.page-1)) + l) >= 0) {
+      return true;
+    } else if (((this.collection_size * (this.page-1)) + l) - k >= 0){
+      return true;
+    }
+    return false;
+  }
 }
