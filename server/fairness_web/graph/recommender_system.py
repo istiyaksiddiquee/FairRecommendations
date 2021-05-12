@@ -99,17 +99,20 @@ class Data:
         self.personsIds, _, self.personsName_GEI, self.personId_GEI = self.get_person_details(self.G)
         print("info level: 3 with time: " + str(time.time() - start)) # took 0.0488798618 seconds
 
-        self.p_ids_withRI, self.research_interests_nameasKey, self.research_interests_IDasKey, person_name_withRI = self.get_researchInterests(self.G)
-        print("info level: 4 with time: " + str(time.time() - start)) # took 0.0781748295 seconds 
+        self.personIds, self.researchInt_ids = self.get_personIDs_and_researchinterestIDs(self.G)
+        print("info level: 4 with time: " + str(time.time() - start))
+        
+        self.p_ids_withRI, self.research_interests_nameasKey, self.research_interests_IDasKey, person_name_withRI = self.get_researchInterests(self.G, self.personIds, self.researchInt_ids)
+        print("info level: 5 with time: " + str(time.time() - start)) # took 0.0781748295 seconds 
 
-        self.sim_matrix, self.hop_matrix = self.get_hop_dist_or_similarity(self.G, self.model, self.personsIds, top_n=len(self.personsIds), cutoff_hop_dist=8)
-        print("info level: 5 with time: " + str(time.time() - start)) # took 927.598469 / 15.46 minutes
+        self.sim_matrix, self.hop_matrix = self.get_hop_dist_or_similarity(self.G, self.model, (self.personsIds + list(self.researchInt_ids.keys())), top_n=500, cutoff_hop_dist=8)
+        print("info level: 6 with time: " + str(time.time() - start)) # took 927.598469 / 15.46 minutes
 
         self.scores_List, self.persons_dict = self.write_scoresToList(self.sim_matrix, self.hop_matrix)
-        print("info level: 6 with time: " + str(time.time() - start)) # took 9.98162937 seconds
+        print("info level: 7 with time: " + str(time.time() - start)) # took 9.98162937 seconds
 
         self.persons = self.get_personsList(self.G, file_path_with_mapped_research_interest)
-        print("info level: 7 with time: " + str(time.time() - start)) # took 27.5489626 seconds
+        print("info level: 8 with time: " + str(time.time() - start)) # took 27.5489626 seconds
 
 
     def get_embeddings(self, G, d=25, walk_len=25, no_walks=100, param_p=1, param_q=1):
@@ -125,7 +128,7 @@ class Data:
         G = nx.read_gpickle(pickle_file_path)
         # print(G)
         node2vec_G, model = self.get_embeddings(
-            G, d=25, walk_len=25, no_walks=100, param_p=1, param_q=1)
+            G, d=50, walk_len=50, no_walks=50, param_p=0.5, param_q=2)
         return node2vec_G, model, G
 
     # to do: how to load model and model weights
@@ -171,13 +174,13 @@ class Data:
             researchInt_ids[node_id[1]] = G.nodes[node_id[1]]
         return personIds, researchInt_ids
 
-    def get_researchInterests(self, G):
+    def get_researchInterests(self, G, personIds, researchInt_ids):
         research_interests_nameasKey = {}
         research_interests_IDasKey = {}
         p_ids_withRI = []  # people Ids with Research Interests.
         person_name_withRI = []  # people names with Research Interests.
-        personIds, researchInt_ids = self.get_personIDs_and_researchinterestIDs(
-            G)
+        #personIds, researchInt_ids = self.get_personIDs_and_researchinterestIDs(
+            #G)
         for personId, researchInt_id in search_edges(G, {"==": [("label",), "interestedIn"]}):
             p_ids_withRI.append(personId)
             person_name_withRI.append(personIds[personId]['name'])
@@ -211,7 +214,7 @@ class Data:
         for p_id in p_ids:
             similarNodes = model.wv.most_similar(p_id, topn=len(p_ids))
             similarPeople = []
-            x = '(EP)' if (G.nodes[p_id]['label']== "External person") else '(P)'
+            #x = '(EP)' if (G.nodes[p_id]['label']== "External person") else '(P)'
             col_name = p_id
 
             for similarity in similarNodes:
@@ -249,14 +252,14 @@ class Data:
                 researchInterest_list.append(v.lstrip().rstrip())
 
         auth_reseachDF = pd.DataFrame({"Autors": authors_list, "ResearchList": researchInterest_list})
-        auth_reseachDF['ResearchList'] = [x if x != 'Eductaion' else 'Education' for x in auth_reseachDF['ResearchList']]
-        auth_reseachDF['ResearchList'] = [x if x != 'Information Retrieval' else 'Information retrieval' for x in auth_reseachDF['ResearchList']]
-        auth_reseachDF['ResearchList'] = [
-            x if x != 'Natural langauge processing' else 'Natural language processing' for x in auth_reseachDF['ResearchList']]
-        auth_reseachDF['ResearchList'] = [
-            x if x != 'Natural language processing' else 'Natural language processing' for x in auth_reseachDF['ResearchList']]
-        auth_reseachDF['ResearchList'] = [
-            x if x != 'Political sciences.' else 'Political sciences' for x in auth_reseachDF['ResearchList']]
+        # auth_reseachDF['ResearchList'] = [x if x != 'Eductaion' else 'Education' for x in auth_reseachDF['ResearchList']]
+        # auth_reseachDF['ResearchList'] = [x if x != 'Information Retrieval' else 'Information retrieval' for x in auth_reseachDF['ResearchList']]
+        # auth_reseachDF['ResearchList'] = [
+        #     x if x != 'Natural langauge processing' else 'Natural language processing' for x in auth_reseachDF['ResearchList']]
+        # auth_reseachDF['ResearchList'] = [
+        #     x if x != 'Natural language processing' else 'Natural language processing' for x in auth_reseachDF['ResearchList']]
+        # auth_reseachDF['ResearchList'] = [
+        #     x if x != 'Political sciences.' else 'Political sciences' for x in auth_reseachDF['ResearchList']]
 
         df = auth_reseachDF.groupby(
             ['Autors', 'ResearchList']).size().unstack(fill_value=0)
@@ -336,5 +339,5 @@ class Data:
                 empty_list["hop_dist"] = h
                 empty_list["sim_score"] = s
             scores_List.append(empty_list)
-            persons_dict[self.personsIds[ind]] = i
+            persons_dict[sim_matrix.index[ind]] = i
         return scores_List, persons_dict
