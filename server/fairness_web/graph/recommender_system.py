@@ -336,19 +336,19 @@ class Data:
                 return persons
 
 
-def write_scoresToList(self, sim_matrix, hop_matrix):
-    persons_dict = {}
-    scores_List = []
-    for ind, i in enumerate(sim_matrix):
-        s = []
-        h = []
-        empty_list = {}
-        for _, j in enumerate(sim_matrix):
-            s.append(sim_matrix[i][j])
-            h.append(hop_matrix[i][j])
-            empty_list['uuid'] = sim_matrix.index[ind]
-            empty_list["hop_dist"] = h
-            empty_list["sim_score"] = s
-        scores_List.append(empty_list)
-        persons_dict[sim_matrix.index[ind]] = i
-    return scores_List, persons_dict
+    def write_scoresToList(self, sim_matrix, hop_matrix):
+        persons_dict = {}
+        scores_List = []
+        for ind, i in enumerate(sim_matrix):
+            s = []
+            h = []
+            empty_list = {}
+            for _, j in enumerate(sim_matrix):
+                s.append(sim_matrix[i][j])
+                h.append(hop_matrix[i][j])
+                empty_list['uuid'] = sim_matrix.index[ind]
+                empty_list["hop_dist"] = h
+                empty_list["sim_score"] = s
+            scores_List.append(empty_list)
+            persons_dict[sim_matrix.index[ind]] = i
+        return scores_List, persons_dict
