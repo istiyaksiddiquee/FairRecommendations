@@ -14,29 +14,24 @@ class Paper:
     uuid: str
     title: str
     abstract: str
-    pType: str
 
-    def __init__(self, uuid, title, abstract, pType):
+    def __init__(self, uuid, title, abstract):
         self.uuid = uuid
         self.title = title
         self.abstract = abstract
-        self.pType = pType
 
     def __repr__(self):
-        return f'Paper(uuid:{self.uuid},"title":{self.title}, "abstract":{self.abstract}, "pType":{self.pType})'
-
+        return f'Paper(uuid:{self.uuid},"title":{self.title}, "abstract":{self.abstract})'
 
     def __str__(self):
-        return {"uuid": self.uuid, "title": self.title, "abstract": self.abstract, "pType": self.pType}
+        return {"uuid": self.uuid, "title": self.title, "abstract": self.abstract}
+       # return f'{{"uuid":{self.uuid},"title":{self.title}, "abstract":{self.abstract}}}'
 
-
-# return f'{{"uuid":{self.uuid},"title":{self.title}, "abstract":{self.abstract}}}'
-
-def to_json(python_object):
-    if isinstance(python_object, Paper):
-        return (python_object.__str__())
-    # {"uuid":python_object.uuid,"title":python_object.title,"abstract":python_object.abstract}
-    raise TypeError((python_object.__str__()) + ' is not JSON serializable')
+    def to_json(python_object):
+        if isinstance(python_object, Paper):
+            return (python_object.__str__())
+        # {"uuid":python_object.uuid,"title":python_object.title,"abstract":python_object.abstract}
+        raise TypeError((python_object.__str__()) + ' is not JSON serializable')
 
 
 # @dataclass
@@ -58,8 +53,8 @@ class Person:
         self.paper_count = paper_count
         self.papers = []
         for i in range(0, len(papers)):
-            # print(papers[i].uuid,papers[i].title,papers[i].abstract, papers[i].pType)
-            self.papers.append(Paper(papers[i].uuid, papers[i].title, papers[i].abstract, papers[i].pType))
+            # print(papers[i].uuid, papers[i].title, papers[i].abstract)
+            self.papers.append(Paper(papers[i].uuid, papers[i].title, papers[i].abstract))
 
     def __str__(self):
         # print(len(self.papers))
@@ -94,39 +89,34 @@ class Data:
     #     def __init__(self,node2vec_G,model,G):
     #         self.node2vec_G,self.model,self.G=node2vec_G,model,G
     def __init__(self, pickle_file_path, file_path_with_mapped_research_interest):
-
+        
         start = time.time()
         print("info level: 1")
-
+        
         self.node2vec_G, self.model, self.G = self.setUp(pickle_file_path)
-        print("info level: 2 with time: " + str(time.time() - start))  # took 1498.3578605651855 seconds / 24.97 minutes
+        print("info level: 2 with time: " + str(time.time() - start)) # took 1498.3578605651855 seconds / 24.97 minutes
 
         self.personsIds, _, self.personsName_GEI, self.personId_GEI = self.get_person_details(self.G)
-        print("info level: 3 with time: " + str(time.time() - start))  # did not estimate
+        print("info level: 3 with time: " + str(time.time() - start)) # took 0.0488798618 seconds
 
-        self.personIds, self.researchInt_ids = self.get_personIDs_and_researchinterestIDs(self.G)
-        print("info level: 4 with time: " + str(time.time() - start))  # took 0.0488798618 seconds
+        self.p_ids_withRI, self.research_interests_nameasKey, self.research_interests_IDasKey, person_name_withRI = self.get_researchInterests(self.G)
+        print("info level: 4 with time: " + str(time.time() - start)) # took 0.0781748295 seconds 
 
-        self.p_ids_withRI, self.research_interests_nameasKey, self.research_interests_IDasKey, person_name_withRI = self.get_researchInterests(
-            self.G, self.personIds, self.researchInt_ids)
-        print("info level: 5 with time: " + str(time.time() - start))  # took 0.0781748295 seconds
-
-        self.sim_matrix, self.hop_matrix = self.get_hop_dist_or_similarity(self.G, self.model, (
-                    self.personsIds + list(self.researchInt_ids.keys())), top_n=500, cutoff_hop_dist=8)
-        print("info level: 6 with time: " + str(time.time() - start))  # took 927.598469 / 15.46 minutes
+        self.sim_matrix, self.hop_matrix = self.get_hop_dist_or_similarity(self.G, self.model, self.personsIds, top_n=len(self.personsIds), cutoff_hop_dist=8)
+        print("info level: 5 with time: " + str(time.time() - start)) # took 927.598469 / 15.46 minutes
 
         self.scores_List, self.persons_dict = self.write_scoresToList(self.sim_matrix, self.hop_matrix)
-        print("info level: 7 with time: " + str(time.time() - start))  # took 9.98162937 seconds
+        print("info level: 6 with time: " + str(time.time() - start)) # took 9.98162937 seconds
 
         self.persons = self.get_personsList(self.G, file_path_with_mapped_research_interest)
-        print("info level: 8 with time: " + str(time.time() - start))  # took 27.5489626 seconds
+        print("info level: 7 with time: " + str(time.time() - start)) # took 27.5489626 seconds
+
 
     def get_embeddings(self, G, d=25, walk_len=25, no_walks=100, param_p=1, param_q=1):
-
-        node2vec_subgraph_comb2 = Node2Vec(G, dimensions=d, walk_length=walk_len, num_walks=no_walks, p=param_p,
-                                           q=param_q)
+        
+        node2vec_subgraph_comb2 = Node2Vec(G, dimensions=d, walk_length=walk_len, num_walks=no_walks, p=param_p, q=param_q)
         model = node2vec_subgraph_comb2.fit(window=10, min_count=1)
-
+        
         return node2vec_subgraph_comb2, model
 
     # read the graph data from pickle file
@@ -134,8 +124,8 @@ class Data:
     def setUp(self, pickle_file_path):
         G = nx.read_gpickle(pickle_file_path)
         # print(G)
-
-        node2vec_G, model = self.get_embeddings(G, d=50, walk_len=50, no_walks=50, param_p=0.5, param_q=2)
+        node2vec_G, model = self.get_embeddings(
+            G, d=25, walk_len=25, no_walks=100, param_p=1, param_q=1)
         return node2vec_G, model, G
 
     # to do: how to load model and model weights
@@ -181,12 +171,13 @@ class Data:
             researchInt_ids[node_id[1]] = G.nodes[node_id[1]]
         return personIds, researchInt_ids
 
-    def get_researchInterests(self, G, personIds, researchInt_ids):
+    def get_researchInterests(self, G):
         research_interests_nameasKey = {}
         research_interests_IDasKey = {}
         p_ids_withRI = []  # people Ids with Research Interests.
         person_name_withRI = []  # people names with Research Interests.
-        # personIds, researchInt_ids = self.get_personIDs_and_researchinterestIDs(G)
+        personIds, researchInt_ids = self.get_personIDs_and_researchinterestIDs(
+            G)
         for personId, researchInt_id in search_edges(G, {"==": [("label",), "interestedIn"]}):
             p_ids_withRI.append(personId)
             person_name_withRI.append(personIds[personId]['name'])
@@ -200,15 +191,14 @@ class Data:
                 research_interests_nameasKey[personIds[personId]['name']] = res_Ints
                 research_interests_IDasKey[personId] = res_Ints1
             else:
-                research_interests_nameasKey[personIds[personId]['name']].append(
-                    researchInt_ids[researchInt_id]['name'])
+                research_interests_nameasKey[personIds[personId]['name']].append(researchInt_ids[researchInt_id]['name'])
                 research_interests_IDasKey[personId].append(researchInt_ids[researchInt_id]['name'])
         return p_ids_withRI, research_interests_nameasKey, research_interests_IDasKey, person_name_withRI
 
     def create_empty_df(self, COLUMN_NAMES):
         zero_data = np.zeros(shape=(len(COLUMN_NAMES), len(COLUMN_NAMES)))
-
-        dataframe = pd.DataFrame(zero_data, columns=COLUMN_NAMES, index=COLUMN_NAMES)
+        dataframe = pd.DataFrame(
+            zero_data, columns=COLUMN_NAMES, index=COLUMN_NAMES)
         return dataframe
 
     # NOTE:person has less similarity then external person even thought all perons are connected via GEI.
@@ -221,20 +211,20 @@ class Data:
         for p_id in p_ids:
             similarNodes = model.wv.most_similar(p_id, topn=len(p_ids))
             similarPeople = []
-            x = '(EP)' if (G.nodes[p_id]['label'] == "External person") else '(P)'
+            x = '(EP)' if (G.nodes[p_id]['label']== "External person") else '(P)'
             col_name = p_id
 
             for similarity in similarNodes:
                 similarNode = similarity[0]
                 distance = 0
-                if ((G.nodes[similarNode]['label'] == "Person" and G.nodes[similarNode]['staffType'] == "Academic") or
-                        G.nodes[similarNode]['label'] == "External person"):
-
-                    s = '(EP)' if (G.nodes[similarNode]['label'] == "External person") else '(P)'
+                if ((G.nodes[similarNode]['label'] == "Person" and G.nodes[similarNode]['staffType'] == "Academic") or G.nodes[similarNode]['label'] == "External person"):
+                    s = '(EP)' if (
+                        G.nodes[similarNode]['label'] == "External person") else '(P)'
                     row_name = similarNode
                     hop_dist = 0
                     if (similarNode in nx.single_source_shortest_path_length(G, p_id, cutoff=cutoff_hop_dist).keys()):
-                        hop_dist = nx.single_source_shortest_path_length(G, p_id, cutoff=cutoff_hop_dist)[similarNode]
+                        hop_dist = nx.single_source_shortest_path_length(
+                            G, p_id, cutoff=cutoff_hop_dist)[similarNode]
                         hop_matrix.loc[row_name, col_name] = hop_dist
                         hop_matrix.loc[col_name, row_name] = hop_dist
                     distance = similarity[1]
@@ -259,29 +249,30 @@ class Data:
                 researchInterest_list.append(v.lstrip().rstrip())
 
         auth_reseachDF = pd.DataFrame({"Autors": authors_list, "ResearchList": researchInterest_list})
-        # auth_reseachDF['ResearchList'] = [x if x != 'Eductaion' else 'Education' for x in auth_reseachDF['ResearchList']]
-        # auth_reseachDF['ResearchList'] = [x if x != 'Information Retrieval' else 'Information retrieval' for x in auth_reseachDF['ResearchList']]
+        auth_reseachDF['ResearchList'] = [x if x != 'Eductaion' else 'Education' for x in auth_reseachDF['ResearchList']]
+        auth_reseachDF['ResearchList'] = [x if x != 'Information Retrieval' else 'Information retrieval' for x in auth_reseachDF['ResearchList']]
+        auth_reseachDF['ResearchList'] = [
+            x if x != 'Natural langauge processing' else 'Natural language processing' for x in auth_reseachDF['ResearchList']]
+        auth_reseachDF['ResearchList'] = [
+            x if x != 'Natural language processing' else 'Natural language processing' for x in auth_reseachDF['ResearchList']]
+        auth_reseachDF['ResearchList'] = [
+            x if x != 'Political sciences.' else 'Political sciences' for x in auth_reseachDF['ResearchList']]
 
-        # auth_reseachDF['ResearchList'] = [x if x != 'Natural langauge processing' else 'Natural language processing' for x in auth_reseachDF['ResearchList']]
-
-        # auth_reseachDF['ResearchList'] = [x if x != 'Natural language processing' else 'Natural language processing' for x in auth_reseachDF['ResearchList']]
-
-        # auth_reseachDF['ResearchList'] = [x if x != 'Political sciences.' else 'Political sciences' for x in auth_reseachDF['ResearchList']]
-
-        df = auth_reseachDF.groupby(['Autors', 'ResearchList']).size().unstack(fill_value=0)
-        s = df.mask(df == 0).stack().astype(int).astype(str).reset_index(level=1).apply('-'.join, 1).add(',').sum(
-            level=0).str[:-1]
-        arrays = np.where(df != 0, df.columns.values + '-' + df.values.astype('str'), None)
+        df = auth_reseachDF.groupby(
+            ['Autors', 'ResearchList']).size().unstack(fill_value=0)
+        s = df.mask(df == 0).stack().astype(int).astype(str).reset_index(
+            level=1).apply('-'.join, 1).add(',').sum(level=0).str[:-1]
+        arrays = np.where(df != 0, df.columns.values +
+                          '-' + df.values.astype('str'), None)
 
         new = []
         for array in arrays:
             new.append(list(filter(None, array)))
 
-        s = df.mask(df == 0).stack(). \
-                astype(int).astype(str). \
- \
-                reset_index(level=1).apply('-'.join, 1).add('-').sum(level=0).str[:-1]
-
+        s = df.mask(df == 0).stack().\
+            astype(int).astype(str).\
+            reset_index(level=1).apply(
+                '-'.join, 1).add('-').sum(level=0).str[:-1]
         s = pd.DataFrame({'authorsUUID': s.index, 'count': s.values})
 
         temp = {}
@@ -302,39 +293,34 @@ class Data:
                 lst['paper_count'] = (cnt_lst[cnt])
                 research_int[auth] = lst
                 cnt += 1
-            #   print(auth,research_int[auth])
+             #   print(auth,research_int[auth])
 
         persons = []
         for node_id in self.personsIds:
             # print(G.nodes[node_id])
-            if ("staffType" in G.nodes[node_id].keys() and G.nodes[node_id]['staffType'] == "Academic") or G.nodes[node_id][
-                'label'] == "External person":
-
-                nation = G.nodes[node_id]['nationality'] if (G.nodes[node_id]['label'] == "Person") else G.nodes[node_id][
-                    'country']
-
-                gen = G.nodes[node_id]['gender'] if (G.nodes[node_id]['label'] == "Person") else "Not-Given"
+            if ("staffType" in G.nodes[node_id].keys() and G.nodes[node_id]['staffType'] == "Academic") or G.nodes[node_id]['label'] == "External person":
+                nation = G.nodes[node_id]['nationality'] if (
+                    G.nodes[node_id]['label'] == "Person") else G.nodes[node_id]['country']
+                gen = G.nodes[node_id]['gender'] if (
+                    G.nodes[node_id]['label'] == "Person") else "Not-Given"
                 papers = []
                 for auth_id, researchOutput_id in search_edges(G, {"==": [("label",), "writtenBy"]}):
-                    if (auth_id == node_id):
-
-                        papers.append(Paper(uuid=researchOutput_id, title=G.nodes[researchOutput_id]['title'],
-                                            abstract=G.nodes[researchOutput_id]['abstract'],
-                                            pType=G.nodes[researchOutput_id]['type']))
+                    if(auth_id == node_id):
+                        papers.append(Paper(
+                            uuid=researchOutput_id, title=G.nodes[researchOutput_id]['title'], abstract=G.nodes[researchOutput_id]['abstract']))
                         pc = []
                         ri = []
                         if node_id in research_int.keys():
                             pc = research_int[node_id]['paper_count']
                             ri = research_int[node_id]['research_interest']
                         if node_id in self.research_interests_IDasKey.keys():
-                            x = list(set(np.unique(self.research_interests_IDasKey[node_id])) - set(ri))
-                            ri = ri + x
-                            pc = pc + list(np.zeros(len(x)))
-                persons.append(Person(uuid=node_id, name=G.nodes[node_id]['name'], nationality=nation, gender=gen,
-                                    research_interest=ri, paper_count=pc, papers=papers))
-                # print(len(persons))
-                return persons
-
+                            x = list(set(np.unique(self.research_interests_IDasKey[node_id]))-set(ri))
+                            ri = ri+x
+                            pc = pc+list(np.zeros(len(x)))
+                persons.append(Person(uuid=node_id, name=G.nodes[node_id]['name'], nationality=nation,
+                               gender=gen, research_interest=ri, paper_count=pc, papers=papers))
+        # print(len(persons))
+        return persons
 
     def write_scoresToList(self, sim_matrix, hop_matrix):
         persons_dict = {}
@@ -350,5 +336,5 @@ class Data:
                 empty_list["hop_dist"] = h
                 empty_list["sim_score"] = s
             scores_List.append(empty_list)
-            persons_dict[sim_matrix.index[ind]] = i
+            persons_dict[self.personsIds[ind]] = i
         return scores_List, persons_dict

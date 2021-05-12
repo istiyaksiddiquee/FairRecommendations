@@ -1,0 +1,36 @@
+[
+    {
+        "name": "Bianca Pramann",
+        "uuid": "b12408f0-d239-49cb-8098-c88f76fad069",
+        "nationality": "Germany",
+        "gender": "Female",
+        "research_interest": [
+            "Digital education",
+            "Information retrieval"
+        ],
+        "paper_count": [
+            1,
+            0.0
+        ],
+        "papers": [
+            {
+                "uuid": "8160c06a-caf5-46a3-b67b-0db5bf0b5a67",
+                "title": "Subject Indexing of Textbooks: Challenges in the Construction of a Discovery System",
+                "abstract": "",
+                "pType": "Contributions to collected editions/anthologies"
+            },
+            {
+                "uuid": "220a6277-907c-4287-a475-aa7f3fa87854",
+                "title": "Forschungsdaten in der internationalen Schulbuchforschung \u2013 Ein Werkstattbericht",
+                "abstract": "",
+                "pType": "Contributions to collected editions/anthologies"
+            },
+            {
+                "uuid": "89b10310-73e4-473e-a976-0e50a434f7e0",
+                "title": "Research Data Management - Current Status and Future Challenges for German Non-University Research Institutions",
+                "abstract": "This report describes the results of a workshop on research data management (RDM) that took place in June 2019. More than 50 experts from 46 different non-university institutes covering all Leibniz Sections participated. The aim of the workshop was the intra- and transdisciplinary exchange among RDM experts of different institutions and sections within the Leibniz Association on current questions and challenges but also on experiences and activities with respect to RDM. The event was structured in inspiring talks, a World Caf\u00e9 to discuss ideas and solutions related to RDM and an exchange of experts following their affiliation to the different Leibniz sections. The workshop revealed that most institutions, independent of scientific fields, face similar overarching problems with respect to RDM, e.g. missing incentives and no awareness of the benefits that would arise from a proper RDM and data sharing. The event also endorsed that the Research Data Working Group of the Leibniz Association (AK Forschungsdaten) is a place for the exchange of all topics around RDM and enables discussions on how to refine RDM at all institutions and in all scientific fields.",
+                "pType": "Journal articles"
+            }
+        ]
+    }
+]
