@@ -171,6 +171,10 @@ class Data:
 
         totalPeopleIds = totalPersonsIds + totalExternalPersonsIds
         totalPeopleNames = totalPersonsName + totalExternalPersonsName
+
+        # TODO: remove 
+        print(f"-- debugging: {len(totalPeopleIds)}")
+
         return totalPeopleIds, totalPeopleNames, personsName_GEI, personId_GEI
 
     def get_personIDs_and_researchinterestIDs(self, G):
@@ -332,8 +336,10 @@ class Data:
                             pc = pc + list(np.zeros(len(x)))
                 persons.append(Person(uuid=node_id, name=G.nodes[node_id]['name'], nationality=nation, gender=gen,
                                     research_interest=ri, paper_count=pc, papers=papers))
-                # print(len(persons))
-                return persons
+                                    
+        # TODO: remove 
+        print(f"-- debugging: {len(persons)}")
+        return persons
 
 
     def write_scoresToList(self, sim_matrix, hop_matrix):

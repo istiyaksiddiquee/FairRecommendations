@@ -1,1 +1,0 @@
-GET localhost:8080/api/databaseReset/?person_json=persons_list.json&similarity_json=scores_dict.json&pickle_file_name=networkx_20210326.pickle HTTP/1.1

@@ -1,22 +1,23 @@
 version: "3.9"
    
 services:
-  fairness_web:
-    container_name: fair_web
-    image: fairness_project_api:0.1.0
+  fairness_web_1:
+    container_name: fair_web_1
+    image: istiyaksiddiquee/fair_web:0.1.0
     build:
       context: ./fairness_web
       dockerfile: Dockerfile
-    command: python /code/manage.py runserver 0.0.0.0:8080
+    command: bash -c "python /code/manage.py runserver 0.0.0.0:8080 && python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m"
     ports:
       - "8080:8080"
-  # fairness_front:
-  #   container_name: fair_front
-  #   image: fairness_project_front:0.1.0
+      - "5678:5678"
+  # fairness_front_1:
+  #   container_name: fair_front_1
+  #   # image: istiyaksiddiquee/fair_front:0.1.0
   #   build:
   #     context: ./fairness_front
   #     dockerfile: Dockerfile
   #   ports:
   #     - "80:80"
   #   depends_on: 
-  #     - fairness_web
+  #     - fairness_web_1

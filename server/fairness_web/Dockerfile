@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.9 AS base
 
 ENV PYTHONUNBUFFERED=1
 
@@ -18,10 +18,15 @@ RUN cd ; wget https://support.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.10/hdf5
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+
+FROM base as debugger 
+RUN pip install debugpy 
+# ENTRYPOINT [ "python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m" ]
+
+
 # RUN pip install numpy pandas bottleneck tables
-
+FROM base AS primary
 WORKDIR /code
-
 COPY requirements.txt /code/
 RUN pip install -r requirements.txt
 COPY . /code/

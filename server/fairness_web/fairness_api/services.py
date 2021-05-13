@@ -5,7 +5,7 @@ import time
 import os.path
 import tables as pt
 
-from graph.recommender_system import *
+from graph.recsys import *
 from h5.repository_access import RepoAccess
 
 from enum import Enum
@@ -194,9 +194,9 @@ class DatabaseResetService():
         data_service = Data(pickle_file_path, file_path_with_mapped_research_interest)
         print("returned from data service: " + str(time.time() - start)) # took 2463.6140756607056 seconds / 41.0602346 minutes
 
-        # scores json size is 16.7MB
-        # person json size is 1.01MB
-        # hdf db size is 1.86 MB !! without any compression
+        # # scores json size is 16.7MB
+        # # person json size is 1.01MB
+        # # hdf db size is 1.86 MB !! without any compression
 
         with open(person_json_path, 'w', encoding='utf-8') as f:
             json.dump(data_service.persons, f, default=Person.to_json, indent=4)

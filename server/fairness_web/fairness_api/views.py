@@ -66,7 +66,6 @@ class ResearchInterest(APIView):
             'Translation Science',
             'Usability'
         ]
-
         return Response({'research_interests': research_interest})
 
 
