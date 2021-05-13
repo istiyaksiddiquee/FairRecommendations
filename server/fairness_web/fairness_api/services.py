@@ -2,26 +2,44 @@ import math
 import json
 import copy
 import time
-import os.path
+import os
 import tables as pt
 
-from graph.recsys import *
+from graph.recommender_system import Data, Person
 from h5.repository_access import RepoAccess
 
 from enum import Enum
 
 
 class Information(Enum):
-    DATABASE_PATH = "graph/data"
-    DATABASE_NAME = "db.h5"
+    DATABASE_PATH = os.getenv('DATA_PATH')
+    DATABASE_NAME = os.getenv('DB_FILE_NAME')
     FILE_WITH_MAPPED_RESEARCH_INTEREST = "uuid_without_blanks.csv"
+
+
+class InitialCheckup():
+
+    @staticmethod 
+    def check_for_db_availability():
+        if os.path.isfile(Information.DATABASE_PATH.value + os.sep + Information.DATABASE_NAME.value):
+            return 0
+        else:
+            print('FATAL ERROR: db not found.')
+            return 1
+
+    @staticmethod 
+    def check_for_file_availability(file_name):
+        if os.path.isfile(Information.DATABASE_PATH.value + os.sep + file_name):
+            return 0
+        else:
+            print(f'FATAL ERROR: required file {file_name} was not found.')
+            return 1
 
 
 class RecommendationService():
 
     def __init__(self):
-        self.read_mode = pt.open_file(
-            Information.DATABASE_PATH.value + '/' + Information.DATABASE_NAME.value, 'r')
+        self.read_mode = pt.open_file(Information.DATABASE_PATH.value + os.sep + Information.DATABASE_NAME.value, 'r')
         self.access = RepoAccess(self.read_mode)
 
     def get_all_users(self, page_number, page_size):
@@ -178,44 +196,51 @@ class RecommendationService():
 class DatabaseResetService():
 
     def __init__(self):
-        self.write_mode = pt.open_file(
-            Information.DATABASE_PATH.value + '/' + Information.DATABASE_NAME.value, 'w')
+        self.write_mode = pt.open_file(Information.DATABASE_PATH.value + os.sep + Information.DATABASE_NAME.value, 'w')
         self.access = RepoAccess(self.write_mode)
 
     def recreate_db(self, person_json, similarity_json, pickle_file_name):
 
-        person_json_path = Information.DATABASE_PATH.value + '/' + person_json
-        similarity_json_path = Information.DATABASE_PATH.value + '/' + similarity_json
-        pickle_file_path = Information.DATABASE_PATH.value + '/' + pickle_file_name
-        file_path_with_mapped_research_interest = Information.DATABASE_PATH.value + \
-            '/' + Information.FILE_WITH_MAPPED_RESEARCH_INTEREST.value
+        if (InitialCheckup.check_for_file_availability(person_json) == 0 
+            and InitialCheckup.check_for_file_availability(similarity_json) == 0 
+            and InitialCheckup.check_for_file_availability(pickle_file_name)):
 
-        start = time.time()
-        data_service = Data(pickle_file_path, file_path_with_mapped_research_interest)
-        print("returned from data service: " + str(time.time() - start)) # took 2463.6140756607056 seconds / 41.0602346 minutes
+            person_json_path = Information.DATABASE_PATH.value + os.sep + person_json
+            similarity_json_path = Information.DATABASE_PATH.value + os.sep + similarity_json
+            pickle_file_path = Information.DATABASE_PATH.value + os.sep + pickle_file_name
+            file_path_with_mapped_research_interest = Information.DATABASE_PATH.value + \
+                os.sep + Information.FILE_WITH_MAPPED_RESEARCH_INTEREST.value
 
-        # # scores json size is 16.7MB
-        # # person json size is 1.01MB
-        # # hdf db size is 1.86 MB !! without any compression
-
-        with open(person_json_path, 'w', encoding='utf-8') as f:
-            json.dump(data_service.persons, f, default=Person.to_json, indent=4)
-
-        print("person json file completed")
-
-        with open(similarity_json_path, 'w') as fp:
-            json.dump(data_service.scores_List, fp, indent=4)
-
-        print("similarity json file completed")
-
-        if os.path.isfile(person_json_path) and os.path.isfile(similarity_json_path):
             start = time.time()
-            self.access.reload_database(person_json_path, similarity_json_path)
-            print("database has been re-written: " + str(time.time() - start))
-            self.write_mode.close()
-            return 0
+            data_service = Data(pickle_file_path, file_path_with_mapped_research_interest)
+            print("returned from data service: " + str(time.time() - start)) # took 2463.6140756607056 seconds / 41.0602346 minutes
+
+            # # scores json size is 16.7MB
+            # # person json size is 1.01MB
+            # # hdf db size is 1.86 MB !! without any compression
+
+            with open(person_json_path, 'w', encoding='utf-8') as f:
+                json.dump(data_service.persons, f, default=Person.to_json, indent=4)
+
+            print("person json file completed")
+
+            with open(similarity_json_path, 'w') as fp:
+                json.dump(data_service.scores_List, fp, indent=4)
+
+            print("similarity json file completed")
+
+            if os.path.isfile(person_json_path) and os.path.isfile(similarity_json_path):
+                start = time.time()
+                self.access.reload_database(person_json_path, similarity_json_path)
+                print("database has been re-written: " + str(time.time() - start))
+                self.write_mode.close()
+                return 0
+            else:
+                return 1
         else:
-            return 1
+            print("Could not perform DB Regeneration. Some file(s) were missing.")
+            return 1 
+
 
 
 class ResponseStructure():

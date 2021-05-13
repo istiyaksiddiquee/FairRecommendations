@@ -12,6 +12,8 @@ export class LandingComponent implements OnInit {
   page_size = 10;
   simpleSlider = 0.4;
   
+  db_status = 1
+
   keyword = 'name';
   selected_user = null;
   collection_size = null;
@@ -24,8 +26,23 @@ export class LandingComponent implements OnInit {
   constructor(private landingService: LandingService) {}
 
   ngOnInit() {
-    this.loadUsers();
-    this.loadResearchInterests();
+    this.InitialValidation();
+  }
+  
+  InitialValidation() {
+    this.landingService.performInitialCheckup().subscribe((data: any) => {
+      
+      if (data.status != 1) {
+        var input_div = document.getElementById("input_compartment");
+        input_div.hidden = false;
+        this.loadResearchInterests();
+        this.loadUsers();
+      } else {
+        console.log("making it hidden")
+        var not_found_div = document.getElementById("not_found_div");
+        not_found_div.hidden = false;
+      }
+    });
   }
 
   loadUsers() {

@@ -10,10 +10,8 @@ RUN npm install --force
 COPY . /app
 RUN npm run build --prod
 
+
 # Stage 2
-
 FROM nginx:1.19.0
-
 COPY --from=build-step /app/dist /usr/share/nginx/html
-
 EXPOSE 80

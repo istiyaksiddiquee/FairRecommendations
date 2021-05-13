@@ -41,4 +41,15 @@ export class LandingService {
             console.log(err);
         }
     }
+
+    performInitialCheckup() {
+        const path: string = `initialization/`;
+        const initializationURL: string = this.BASE_URL + path;
+
+        try {
+            return this.http.get(initializationURL);
+        } catch(err) {
+            console.log(err);
+        }
+    }
 }

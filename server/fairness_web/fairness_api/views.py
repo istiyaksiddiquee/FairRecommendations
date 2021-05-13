@@ -6,8 +6,33 @@ from rest_framework import status
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from .services import RecommendationService
-from .services import DatabaseResetService
+from .services import RecommendationService, DatabaseResetService, InitialCheckup
+
+
+class Initialization(APIView):
+    """ Methods related to initial requirement checking """
+
+    @swagger_auto_schema(
+        operation_summary="Validates the availability of required resources to continue with the application",
+        operation_description="""This is a GET method that does not require any other parameter. Upon invocation, \
+        it will check for the availability of the database file that is required for this application. If it is not \
+            in the appropriate location, then the method will return a non-zero response. """,
+        responses={
+            200: openapi.Response(
+                'Successful Response with array of users'
+            ),
+            404: openapi.Response(
+                'Required Object Not Found'
+            ),
+        },
+        tags=[
+            'Initialization'
+        ]
+    )
+    def get(self, request, format=None):
+        
+        status = InitialCheckup.check_for_db_availability()
+        return Response({'status': status})
 
 
 class ResearchInterest(APIView):
@@ -52,7 +77,7 @@ class ResearchInterest(APIView):
             'Ethnology',
             'Gender Studies',
             'History',
-            'Information retrieval', # TODO: change this to Retrieval with capital R
+            'Information retrieval',
             'Knowledge Graphs',
             'Legal Artificial Intelligence',
             'Machine Learning',
