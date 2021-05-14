@@ -25,8 +25,8 @@ class Initialization(APIView):
     )
     def get(self, request, format=None):
 
-        status = InitialCheckup.check_for_db_availability()
-        if status == 0:
+        state = InitialCheckup.check_for_db_availability()
+        if state == 0:
             return Response("Successful", status=status.HTTP_200_OK)
         else:
             return Response("One or multiple required file(s) were not found", status=status.HTTP_404_NOT_FOUND)
