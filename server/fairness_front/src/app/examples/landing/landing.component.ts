@@ -36,6 +36,9 @@ export class LandingComponent implements OnInit {
       (data: any) => {
         var input_div = document.getElementById("input_compartment");
         input_div.hidden = false;
+        var slider_tooltip_list = document.getElementsByClassName('noUi-tooltip');
+        slider_tooltip_list[0].style.bottom = "-320%"
+        
         this.loadResearchInterests();
         this.loadUsers();
       },
