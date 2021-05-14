@@ -153,7 +153,7 @@ class RecommendationService:
                 "with_bias": self.jsonify_recommendation(with_bias, True),
                 "bias_corrected": self.jsonify_recommendation(bias_corrected, False),
                 "length": len(scored_items),
-                "female_ratio": female_ratio,
+                "female_ratio": round(female_ratio, 3),
             }
 
             return output
