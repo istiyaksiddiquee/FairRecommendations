@@ -74,7 +74,7 @@ class RecommendationService:
                 for paper in item.publication_list:
                     if 'ri_label' in paper:
                         ri_label_list = paper['ri_label']
-                        if req_research_interest.lower().strip() in ri_label_list:
+                        if req_research_interest.title().strip() in ri_label_list:
                             paper_list.append(paper)
 
                 scored_items.append(

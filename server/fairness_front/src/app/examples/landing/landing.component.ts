@@ -149,6 +149,22 @@ export class LandingComponent implements OnInit {
   //       }
   //   }
 
+  biased_paper_card_click(item) {
+    var infoDiv = document.getElementById(item.uuid + "-biased");
+    
+    infoDiv.hidden === true
+      ? (infoDiv.hidden = false)
+      : (infoDiv.hidden = true);
+  }
+
+  corrected_paper_card_click(item) {
+    var infoDiv = document.getElementById(item.uuid + "-corrected");
+    
+    infoDiv.hidden === true
+      ? (infoDiv.hidden = false)
+      : (infoDiv.hidden = true);
+  }
+
   indexChekcer(k, l) {
     console.log(k, l);
     if (k - ((this.collection_size * (this.page-1)) + l) >= 0) {

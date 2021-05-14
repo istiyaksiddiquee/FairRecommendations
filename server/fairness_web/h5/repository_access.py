@@ -25,10 +25,7 @@ class RepoAccess():
                 counter += 1
                 all_user.append({
                     'uuid': x['uuid'].decode('UTF-8'),
-                    'name': x['name'].decode('UTF-8'),
-                    'gender': x['gender'].decode('UTF-8'),
-                    'nationality': x['nationality'].decode('UTF-8'),
-                    'research_interests': [a for a in x['research_interests'] if len(a) != 0]
+                    'name': x['name'].decode('UTF-8')
                 })
         return all_user
 

@@ -10,7 +10,7 @@ from .services import RecommendationService, DatabaseResetService, InitialChecku
 
 
 class Initialization(APIView):
-    """ Methods related to initial requirement checking """
+    """Methods related to initial requirement checking"""
 
     @swagger_auto_schema(
         operation_summary="Validates the availability of required resources to continue with the application",
@@ -18,25 +18,19 @@ class Initialization(APIView):
         it will check for the availability of the database file that is required for this application. If it is not \
             in the appropriate location, then the method will return a non-zero response. """,
         responses={
-            200: openapi.Response(
-                'Successful Response with array of users'
-            ),
-            404: openapi.Response(
-                'Required Object Not Found'
-            ),
+            200: openapi.Response("Successful Response with array of users"),
+            404: openapi.Response("Required Object Not Found"),
         },
-        tags=[
-            'Initialization'
-        ]
+        tags=["Initialization"],
     )
     def get(self, request, format=None):
 
         status = InitialCheckup.check_for_db_availability()
-        return Response({'status': status})
+        return Response({"status": status})
 
 
 class ResearchInterest(APIView):
-    """ Methods related to obtaining research interests available in the system """
+    """Methods related to obtaining research interests available in the system"""
 
     @swagger_auto_schema(
         operation_summary="Returns a list of available Research Interests",
@@ -44,93 +38,79 @@ class ResearchInterest(APIView):
         it will returns a list of strings where each string represents a research \
             interest that is available and applicable in the system.""",
         manual_parameters=[
-            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, required=False,
-                              description="Size of each page", type=openapi.TYPE_STRING),
-            openapi.Parameter(name='page_number', in_=openapi.IN_QUERY, required=False,
-                              description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
-        ], responses={
-            200: openapi.Response(
-                'Successful Response with array of users'
-            ),
-            400: openapi.Response(
-                'Malformed URL Request'
-            ),
+            openapi.Parameter(name="page_size", in_=openapi.IN_QUERY, required=False, description="Size of each page", type=openapi.TYPE_STRING),
+            openapi.Parameter(name="page_number", in_=openapi.IN_QUERY, required=False, description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: openapi.Response("Successful Response with array of users"),
+            400: openapi.Response("Malformed URL Request"),
         },
-        tags=[
-            'Listing Research Interests'
-        ]
+        tags=["Listing Research Interests"],
     )
     def get(self, request, format=None):
 
         research_interest = [
-            'Anthropology',
-            'Artificial Intelligence',
-            'Climate Research',
-            'Cultural Studies',
-            'Data Science',
-            'Digital Education',
-            'Digital Humanities',
-            'Digital Libraries',
-            'Digital Media',
-            'Economics',
-            'Education',
-            'Environment',
-            'Ethnology',
-            'Gender Studies',
-            'History',
-            'Humanities',
-            'Information Retrieval',
-            'Knowledge Graphs',
-            'Legal Artificial Intelligence',
-            'Machine Learning',
-            'Natural Language Processing',
-            'Peace & Conflict Studies',
-            'Political Sciences',
-            'Political Studies',
-            'Project Management',
-            'Psychology',
-            'Recommendaton Systems',
-            'Recommender Systems',
-            'Religion',
-            'Transaltional Science',
-            'Translation Sciences',
-            'Usability',
-            'User Modeling',
-            'Virtual Reality'
+            "Anthropology",
+            "Artificial Intelligence",
+            "Climate Research",
+            "Cultural Studies",
+            "Data Science",
+            "Digital Education",
+            "Digital Humanities",
+            "Digital Libraries",
+            "Digital Media",
+            "Economics",
+            "Education",
+            "Environment",
+            "Ethnology",
+            "Gender Studies",
+            "History",
+            "Humanities",
+            "Information Retrieval",
+            "Knowledge Graphs",
+            "Legal Artificial Intelligence",
+            "Machine Learning",
+            "Natural Language Processing",
+            "Peace & Conflict Studies",
+            "Political Sciences",
+            "Political Studies",
+            "Project Management",
+            "Psychology",
+            "Recommendaton Systems",
+            "Recommender Systems",
+            "Religion",
+            "Transaltional Science",
+            "Translation Sciences",
+            "Usability",
+            "User Modeling",
+            "Virtual Reality",
         ]
-        return Response({'research_interests': research_interest})
+        return Response({"research_interests": research_interest})
 
     # def regenerate_ri(self, request, format=None):
     #     db_svc = DatabaseResetService()
     #     self.research_interest = db_svc.repopulate_research_interest_array()
 
-class User(APIView):
 
+class User(APIView):
     @swagger_auto_schema(
         operation_summary="Returns a list of Users",
         operation_description="""This is a GET method that returns a list of Users. It can be used with or without the pagination parameters. \
             Please see method parameters for information regarding keys for pagination parameters.""",
         manual_parameters=[
-            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, required=False,
-                              description="Size of each page", type=openapi.TYPE_STRING),
-            openapi.Parameter(name='page_number', in_=openapi.IN_QUERY, required=False,
-                              description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
-        ], responses={
-            200: openapi.Response(
-                'Successful Response with array of users'
-            ),
-            400: openapi.Response(
-                'Malformed URL Request'
-            ),
+            openapi.Parameter(name="page_size", in_=openapi.IN_QUERY, required=False, description="Size of each page", type=openapi.TYPE_STRING),
+            openapi.Parameter(name="page_number", in_=openapi.IN_QUERY, required=False, description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: openapi.Response("Successful Response with array of users"),
+            400: openapi.Response("Malformed URL Request"),
         },
-        tags=[
-            'Listing Available Users'
-        ]
+        tags=["Listing Available Users"],
     )
     def get(self, request, format=None):
 
-        req_page_size = request.GET['page_size']
-        req_page_number = request.GET['page_number']
+        req_page_size = request.GET["page_size"]
+        req_page_number = request.GET["page_number"]
 
         if req_page_size != None and req_page_number != None:
             if req_page_size.isnumeric() != True or req_page_number.isnumeric() != True:
@@ -140,13 +120,11 @@ class User(APIView):
             req_page_number = 0
 
         recommendation_service = RecommendationService()
-        output = recommendation_service.get_all_users(
-            req_page_number, req_page_size)
+        output = recommendation_service.get_all_users(req_page_number, req_page_size)
         return Response(output)
 
 
 class Recommendation(APIView):
-
     @swagger_auto_schema(
         operation_summary="Returns calculated Recommendations",
         operation_description="""This is a GET method that returns two lists of Recommendations. One of these list possess uncorrected, raw recommendation. \
@@ -154,41 +132,25 @@ class Recommendation(APIView):
         However, this method can be used in conjunction with the pagination parameter. Please see details on the parameters section. Furthermore, please note \
         that the uuid, research interest, and similarity weight paramteres are mandatory here.""",
         manual_parameters=[
-            openapi.Parameter(name='uuid', in_=openapi.IN_QUERY, required=True,
-                              description="UUID of user", type=openapi.TYPE_STRING),
-            openapi.Parameter(name='research_interest', in_=openapi.IN_QUERY, required=True,
-                              description="Research Interest from predefined list of Research Interest", type=openapi.TYPE_STRING),
-            openapi.Parameter(name='sim_weight', in_=openapi.IN_QUERY, required=True,
-                              description="Preference indicative weight for cosine similarity", type=openapi.TYPE_STRING),
-            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, required=False,
-                              description="Size of each page", type=openapi.TYPE_STRING),
-            openapi.Parameter(name='page_number', in_=openapi.IN_QUERY, required=False,
-                              description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
-        ], responses={
-            200: openapi.Response(
-                'Successful Response with bias and bias corrected list',
-                output={
-                    'with_bias': '', 
-                    'bias_corrected': '',
-                    'length': '',
-                    'female_ratio': ''
-                }
-            ),
-            400: openapi.Response(
-                'Malformed URL Request'
-            ),
+            openapi.Parameter(name="uuid", in_=openapi.IN_QUERY, required=True, description="UUID of user", type=openapi.TYPE_STRING),
+            openapi.Parameter(name="research_interest", in_=openapi.IN_QUERY, required=True, description="Research Interest from predefined list of Research Interest", type=openapi.TYPE_STRING),
+            openapi.Parameter(name="sim_weight", in_=openapi.IN_QUERY, required=True, description="Preference indicative weight for cosine similarity", type=openapi.TYPE_STRING),
+            openapi.Parameter(name="page_size", in_=openapi.IN_QUERY, required=False, description="Size of each page", type=openapi.TYPE_STRING),
+            openapi.Parameter(name="page_number", in_=openapi.IN_QUERY, required=False, description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: openapi.Response("Successful Response with bias and bias corrected list", output={"with_bias": "", "bias_corrected": "", "length": "", "female_ratio": ""}),
+            400: openapi.Response("Malformed URL Request"),
         },
-        tags=[
-            'Generating Recommendation'
-        ]
+        tags=["Generating Recommendation"],
     )
     def get(self, request, format=None):
 
-        req_uuid = request.GET['uuid']
-        req_research_interest = request.GET['research_interest']
-        req_sim_weight = request.GET['sim_weight']
-        req_page_size = request.GET['page_size']
-        req_page_number = request.GET['page_number']
+        req_uuid = request.GET["uuid"]
+        req_research_interest = request.GET["research_interest"]
+        req_sim_weight = request.GET["sim_weight"]
+        req_page_size = request.GET["page_size"]
+        req_page_number = request.GET["page_number"]
 
         if req_uuid == None or len(req_uuid) == 0 or req_research_interest == None or len(req_research_interest) == 0:
             return Response().status_code(400)
@@ -197,8 +159,7 @@ class Recommendation(APIView):
                 return Response().status_code(400)
 
         recommendation_service = RecommendationService()
-        output = recommendation_service.get_recommendation(
-            req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
+        output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
 
         if output == 1:
             return Response("Internal Server Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -207,42 +168,28 @@ class Recommendation(APIView):
 
 
 class DatabaseReset(APIView):
-
     @swagger_auto_schema(
         operation_summary="URL for regenerating database",
         operation_description="""Sometimes, due to the change in the database, we shall feel the necessity of repopulating the database. This URL is \
         for that purpose. Please note that it will take approximately 40 minutes to complete, so make sure that you know what you are doing, before invoking this URL. \
         The method paramters are mentioned""",
         manual_parameters=[
-            openapi.Parameter(name='person_json', in_=openapi.IN_QUERY, required=False,
-                              description="name of person json file", type=openapi.TYPE_STRING),
-            openapi.Parameter(name='similarity_json', in_=openapi.IN_QUERY, required=False,
-                              description="name of similarity json file", type=openapi.TYPE_STRING),
-            openapi.Parameter(name='pickle_file_name', in_=openapi.IN_QUERY, required=True,
-                              description="name of database pickle file", type=openapi.TYPE_STRING),
-        ], responses={
-            200: openapi.Response(
-                'Successful!'
-            ),
-            400: openapi.Response(
-                'Malformed Request'
-            ),
+            openapi.Parameter(name="person_json", in_=openapi.IN_QUERY, required=False, description="name of person json file", type=openapi.TYPE_STRING),
+            openapi.Parameter(name="similarity_json", in_=openapi.IN_QUERY, required=False, description="name of similarity json file", type=openapi.TYPE_STRING),
+            openapi.Parameter(name="pickle_file_name", in_=openapi.IN_QUERY, required=True, description="name of database pickle file", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: openapi.Response("Successful!"),
+            400: openapi.Response("Malformed Request"),
         },
-        tags=[
-            'Database Reset'
-        ]
+        tags=["Database Reset"],
     )
     def get(self, request, format=None):
-        req_person = request.GET['person_json']
-        req_similarity = request.GET['similarity_json']
-        req_pickle_file_name = request.GET['pickle_file_name']
+        req_person = request.GET["person_json"]
+        req_similarity = request.GET["similarity_json"]
+        req_pickle_file_name = request.GET["pickle_file_name"]
 
-        if (req_person == None
-            or len(req_person) == 0
-            or req_similarity == None
-            or len(req_similarity) == 0
-            or req_pickle_file_name == None
-                or len(req_pickle_file_name) == 0):
+        if req_person == None or len(req_person) == 0 or req_similarity == None or len(req_similarity) == 0 or req_pickle_file_name == None or len(req_pickle_file_name) == 0:
             return Response("Malformed Request", status=status.HTTP_400_BAD_REQUEST)
 
         # call to neo4j code to recreate these json files
@@ -251,8 +198,7 @@ class DatabaseReset(APIView):
         # req_person, req_similarity = neosvc.populate_json(req_person, req_similarity)
 
         db_rest_svc = DatabaseResetService()
-        return_code = db_rest_svc.recreate_db(
-            req_person, req_similarity, req_pickle_file_name)
+        return_code = db_rest_svc.recreate_db(req_person, req_similarity, req_pickle_file_name)
 
         if return_code != 0:
             return Response(status=status.HTTP_400_BAD_REQUEST)

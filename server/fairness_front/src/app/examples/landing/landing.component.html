@@ -145,14 +145,12 @@
                                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                     </div>
                                 </div>
-                                <div id="{{ item.uuid }}-biased" class="cardInfo pull-right" style="width: 18rem;" hidden>
-                                    <div class="card-body">
-                                        <h5 id= "div_1_title"class="card-title">Card title</h5>
-                                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                                        <p class="card-text">Some quick example text to build on the card title and make up the bulk
-                                            of the card's content.</p>
-                                        <a href="#" class="card-link">Card link</a>
-                                        <a href="#" class="card-link">Another link</a>
+                                <div id="{{ item.uuid }}-biased" class="cardInfo pull-right" (click)="biased_paper_card_click(item)" hidden>
+                                    <h5 id= "div_1_title"class="card-title">Literature List</h5>
+                                    <div *ngFor="let paper of item.publication_list" class="card col-md-12">
+                                        <div class="row">
+                                            <p class="card-text">{{ paper.title }}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -198,14 +196,12 @@
                                     </div>
 
                                 </div>
-                                <div id="{{ item.uuid }}-corrected" class="cardInfo pull-right" style="width: 18rem;" hidden>
-                                    <div class="card-body">
-                                        <h5 class="card-title">Card title</h5>
-                                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                                        <p class="card-text">Some quick example text to build on the card title and make up the bulk
-                                            of the card's content.</p>
-                                        <a href="#" class="card-link">Card link</a>
-                                        <a href="#" class="card-link">Another link</a>
+                                <div id="{{ item.uuid }}-corrected" class="cardInfo pull-right" (click)="corrected_paper_card_click(item)" hidden>
+                                    <h5 id= "div_1_title"class="card-title">Literature List</h5>
+                                    <div *ngFor="let paper of item.publication_list" class="card col-md-12">
+                                        <div class="row">
+                                            <p class="card-text">{{ paper.title }}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
