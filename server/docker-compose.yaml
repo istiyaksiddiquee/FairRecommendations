@@ -16,13 +16,13 @@ services:
       - DATA_PATH=${DATA_DIR}
       - DB_FILE_NAME=${DB_FILE_NAME}
       - MAPPING_FILE_NAME=${MAPPING_FILE_NAME}
-  # fairness_front:
-  #   container_name: fair_front
-  #   image: ${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}
-  #   build:
-  #     context: ./fairness_front
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "${FRONTEND_PORT}:80"
-  #   depends_on: 
-  #     - fairness_web
+  fairness_front:
+    container_name: fair_front
+    image: ${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}
+    build:
+      context: ./fairness_front
+      dockerfile: Dockerfile
+    ports:
+      - "${FRONTEND_PORT}:80"
+    depends_on: 
+      - fairness_web
