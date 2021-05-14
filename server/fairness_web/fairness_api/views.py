@@ -30,7 +30,7 @@ class Initialization(APIView):
         ]
     )
     def get(self, request, format=None):
-        
+
         status = InitialCheckup.check_for_db_availability()
         return Response({'status': status})
 
@@ -61,7 +61,7 @@ class ResearchInterest(APIView):
         ]
     )
     def get(self, request, format=None):
-        
+
         research_interest = [
             'Anthropology',
             'Artificial Intelligence',
@@ -71,28 +71,38 @@ class ResearchInterest(APIView):
             'Digital Education',
             'Digital Humanities',
             'Digital Libraries',
-			'Economics'
+            'Digital Media',
+            'Economics',
             'Education',
-			'Environment',
+            'Environment',
             'Ethnology',
             'Gender Studies',
             'History',
-            'Information retrieval',
+            'Humanities',
+            'Information Retrieval',
             'Knowledge Graphs',
             'Legal Artificial Intelligence',
             'Machine Learning',
-            'Musicology',
             'Natural Language Processing',
-			'Peace & Conflict Studies', 
+            'Peace & Conflict Studies',
             'Political Sciences',
+            'Political Studies',
             'Project Management',
+            'Psychology',
+            'Recommendaton Systems',
             'Recommender Systems',
             'Religion',
-            'Translation Science',
-            'Usability'
+            'Transaltional Science',
+            'Translation Sciences',
+            'Usability',
+            'User Modeling',
+            'Virtual Reality'
         ]
         return Response({'research_interests': research_interest})
 
+    # def regenerate_ri(self, request, format=None):
+    #     db_svc = DatabaseResetService()
+    #     self.research_interest = db_svc.repopulate_research_interest_array()
 
 class User(APIView):
 
@@ -130,7 +140,8 @@ class User(APIView):
             req_page_number = 0
 
         recommendation_service = RecommendationService()
-        output = recommendation_service.get_all_users(req_page_number, req_page_size)
+        output = recommendation_service.get_all_users(
+            req_page_number, req_page_size)
         return Response(output)
 
 
@@ -156,7 +167,12 @@ class Recommendation(APIView):
         ], responses={
             200: openapi.Response(
                 'Successful Response with bias and bias corrected list',
-                output={'with_bias': '', 'bias_corrected': ''}
+                output={
+                    'with_bias': '', 
+                    'bias_corrected': '',
+                    'length': '',
+                    'female_ratio': ''
+                }
             ),
             400: openapi.Response(
                 'Malformed URL Request'
@@ -181,11 +197,12 @@ class Recommendation(APIView):
                 return Response().status_code(400)
 
         recommendation_service = RecommendationService()
-        output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
+        output = recommendation_service.get_recommendation(
+            req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
 
         if output == 1:
             return Response("Internal Server Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
         return Response(output, status=status.HTTP_200_OK)
 
 
@@ -199,7 +216,7 @@ class DatabaseReset(APIView):
         manual_parameters=[
             openapi.Parameter(name='person_json', in_=openapi.IN_QUERY, required=False,
                               description="name of person json file", type=openapi.TYPE_STRING),
-            openapi.Parameter(name='similarity_json', in_=openapi.IN_QUERY, required=False, 
+            openapi.Parameter(name='similarity_json', in_=openapi.IN_QUERY, required=False,
                               description="name of similarity json file", type=openapi.TYPE_STRING),
             openapi.Parameter(name='pickle_file_name', in_=openapi.IN_QUERY, required=True,
                               description="name of database pickle file", type=openapi.TYPE_STRING),
@@ -221,11 +238,11 @@ class DatabaseReset(APIView):
         req_pickle_file_name = request.GET['pickle_file_name']
 
         if (req_person == None
-        or len(req_person) == 0
-        or req_similarity == None
-        or len(req_similarity) == 0
-        or req_pickle_file_name == None 
-        or len(req_pickle_file_name) == 0):
+            or len(req_person) == 0
+            or req_similarity == None
+            or len(req_similarity) == 0
+            or req_pickle_file_name == None
+                or len(req_pickle_file_name) == 0):
             return Response("Malformed Request", status=status.HTTP_400_BAD_REQUEST)
 
         # call to neo4j code to recreate these json files
@@ -234,10 +251,10 @@ class DatabaseReset(APIView):
         # req_person, req_similarity = neosvc.populate_json(req_person, req_similarity)
 
         db_rest_svc = DatabaseResetService()
-        return_code = db_rest_svc.recreate_db(req_person, req_similarity, req_pickle_file_name)
-        
+        return_code = db_rest_svc.recreate_db(
+            req_person, req_similarity, req_pickle_file_name)
 
         if return_code != 0:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-            
+
         return Response("Success")

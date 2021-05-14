@@ -1,8 +1,11 @@
 import csv
 import json
-import tables as pt
-import numpy as np
 from collections import namedtuple
+
+import chardet
+import numpy as np
+import pandas as pd
+import tables as pt
 
 
 class User(pt.IsDescription):
@@ -18,6 +21,7 @@ class Publication(pt.IsDescription):
     author_id = pt.StringCol(50)  # uuid
     title = pt.StringCol(200)
     abstract = pt.StringCol(500)
+    ri_label = pt.StringCol(itemsize=50, shape=10)
 
 
 class Similarity(pt.IsDescription):
@@ -32,17 +36,17 @@ class Similarity_UserArray(pt.IsDescription):
 
 
 class Converter:
-
     def __init__(self, h5file):
         self.h5file = h5file
+        self.label_dict = None
 
     def convert_to_similarity_file(self, sim_file):
 
-        uarray = self.h5file.create_table(self.h5file.root, 'similarity_userarray', Similarity_UserArray)
-        sim_table = self.h5file.create_table(self.h5file.root, 'similarity', Similarity)
-        
+        uarray = self.h5file.create_table(self.h5file.root, "similarity_userarray", Similarity_UserArray)
+        sim_table = self.h5file.create_table(self.h5file.root, "similarity", Similarity)
+
         counter = 0
-        user_array = ['' for _ in range(920)]
+        user_array = ["" for _ in range(920)]
 
         with open(sim_file) as json_file:
             data = json.load(json_file)
@@ -51,7 +55,7 @@ class Converter:
                 obj = namedtuple("A", item.keys())(*item.values())
                 sim_row = sim_table.row
 
-                user_array[counter] = obj.uuid.encode(encoding='UTF-8')
+                user_array[counter] = obj.uuid.encode(encoding="UTF-8")
                 counter += 1
 
                 similarity_scores = np.zeros(920)
@@ -63,24 +67,25 @@ class Converter:
                 for j in range(len(obj.hop_dist)):
                     similarity_scores[j] = obj.hop_dist[j]
 
-                sim_row['uuid'] = obj.uuid.encode(encoding='UTF-8')
-                sim_row['cosine_sim'] = similarity_scores
-                sim_row['hop_distance'] = hop_distances
+                sim_row["uuid"] = obj.uuid.encode(encoding="UTF-8")
+                sim_row["cosine_sim"] = similarity_scores
+                sim_row["hop_distance"] = hop_distances
 
                 sim_row.append()
 
-        user_table_row = uarray.row 
-        user_table_row['id'] = 1
-        user_table_row['users'] = user_array
+        user_table_row = uarray.row
+        user_table_row["id"] = 1
+        user_table_row["users"] = user_array
         user_table_row.append()
 
         uarray.flush()
         sim_table.flush()
 
-    def convert_to_user_info(self, json_file):
+    def convert_to_user_info(self, json_file, file_mapped_research_interest):
 
-        user_info_table = self.h5file.create_table(self.h5file.root, 'user_info', User)
-        publication_table = self.h5file.create_table(self.h5file.root, 'publication', Publication)
+        self.label_dict = self.generate_publication_label_dict(file_mapped_research_interest)
+        user_info_table = self.h5file.create_table(self.h5file.root, "user_info", User)
+        publication_table = self.h5file.create_table(self.h5file.root, "publication", Publication)
 
         with open(json_file) as json_file:
             data = json.load(json_file)
@@ -90,32 +95,44 @@ class Converter:
 
                 h5_row = user_info_table.row
 
-                h5_row['uuid'] = obj.uuid.encode(encoding='UTF-8')
-                h5_row['name'] = obj.name.encode(encoding='UTF-8')
-                h5_row['nationality'] = obj.nationality.encode(
-                    encoding='UTF-8')
-                h5_row['gender'] = obj.gender.encode(encoding='UTF-8')
+                h5_row["uuid"] = obj.uuid.encode(encoding="UTF-8")
+                h5_row["name"] = obj.name.encode(encoding="UTF-8")
+                h5_row["nationality"] = obj.nationality.encode(encoding="UTF-8")
+                h5_row["gender"] = obj.gender.encode(encoding="UTF-8")
 
                 interest_arr = []
 
                 for i in range(15):
-                    interest_arr.append('')
+                    interest_arr.append("")
 
                 for j in range(len(obj.research_interest)):
                     if j < 15:
-                        interest_arr[j] = obj.research_interest[j].encode(
-                            encoding='UTF-8')
+                        interest_arr[j] = obj.research_interest[j].title().strip().encode(encoding="UTF-8")
 
-                h5_row['research_interests'] = interest_arr
+                h5_row["research_interests"] = interest_arr
 
                 for paper in obj.papers:
                     p = namedtuple("A", paper.keys())(*paper.values())
                     pub_row = publication_table.row
 
-                    pub_row['publication_id'] = p.uuid.encode(encoding='UTF-8')
-                    pub_row['author_id'] = obj.uuid.encode(encoding='UTF-8')
-                    pub_row['title'] = p.title.encode(encoding='UTF-8')
-                    pub_row['abstract'] = p.abstract.encode(encoding='UTF-8')
+                    publication_id = p.uuid.encode(encoding="UTF-8")
+                    pub_row["publication_id"] = publication_id
+                    pub_row["author_id"] = obj.uuid.encode(encoding="UTF-8")
+                    pub_row["title"] = p.title.encode(encoding="UTF-8")
+                    pub_row["abstract"] = p.abstract.encode(encoding="UTF-8")
+
+                    label_list = self.parse_label_list_from_dict(self.label_dict, publication_id.decode(encoding="UTF-8"))
+                    
+                    label_arr = []
+
+                    for i in range(10):
+                        label_arr.append("")
+
+                    for j in range(len(label_list)):
+                        if j < 10:
+                            label_arr[j] = label_list[j].title().strip().encode(encoding="UTF-8")
+
+                    pub_row["ri_label"] = label_arr
 
                     pub_row.append()
 
@@ -133,22 +150,39 @@ class Converter:
         paper_tbl = self.h5file.root.publication
         search_str = "b12408f0-d239-49cb-8098-c88f76fad069"
         for row in user_tbl.where("uuid == '" + search_str + "'"):
-            arr = [a.decode('UTF-8')
-                   for a in row['research_interests'] if len(a) != 0]
-            print('user name:' + row['name'].decode('UTF-8') +
-                  'research_interests: ' + ', '.join(arr))
+            arr = [a.decode("UTF-8") for a in row["research_interests"] if len(a) != 0]
+            print("user name:" + row["name"].decode("UTF-8") + "research_interests: " + ", ".join(arr))
             for item in paper_tbl.where("author_id == '" + search_str + "'"):
-                print(item['title'])
+                print(item["title"])
 
     def sample_from_similarity(self):
 
         tbl = self.h5file.root.similarity
-        for row in tbl.where("uuid == '" + 'xyz2' + "'"):
-            print(row['hop_distance'])
-            print(row['cosine_sim'])
+        for row in tbl.where("uuid == '" + "xyz2" + "'"):
+            print(row["hop_distance"])
+            print(row["cosine_sim"])
 
     def sample_from_sim_user_array(self):
 
         tbl = self.h5file.root.similarity_userarray
         for row in tbl.where("id == " + str(1)):
-            print(row['users'])
+            print(row["users"])
+
+    def generate_publication_label_dict(self, input_file):
+
+        with open(input_file, "rb") as f:
+            encoding = chardet.detect(f.read(10000))["encoding"]
+
+        f = pd.read_csv(input_file, sep=",", encoding=encoding)
+        dictionary = f.set_index("Paper_id")["ResearchInt"].to_dict()
+
+        return dictionary
+
+    def parse_label_list_from_dict(self, dictionary, publication_id):
+
+        if publication_id in dictionary:
+            label_list = dictionary[publication_id]
+            if type(label_list) == str:
+                str_list = label_list.replace("]", "").replace("[", "").replace("'", "").split(",")
+                return [item.strip() for item in str_list]
+        return []

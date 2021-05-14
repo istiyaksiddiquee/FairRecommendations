@@ -51,10 +51,26 @@ class RepoAccess():
         
 
         user_tbl = self.h5file.root.user_info
+        publication_tbl = self.h5file.root.publication
         
         for i in range(len(user_array)):
-            if len(user_array[i]) != 0:
-                for row in user_tbl.where("uuid == '" + str(user_array[i].decode('UTF-8')) + "'"):
+            user_uuid = user_array[i]
+            if len(user_uuid) != 0:
+                for row in user_tbl.where("uuid == '" + str(user_uuid.decode('UTF-8')) + "'"):
+
+                    publication_list = []
+
+                    for pubrow in publication_tbl.where("author_id == '" + str(user_uuid.decode('UTF-8')) + "'"):
+                        
+                        ri_label = []
+                        if len(pubrow['ri_label']) != 0:
+                            ri_label = [item.decode('UTF-8') for item in pubrow['ri_label'] if len(item) != 0]
+
+                        publication_list.append({
+                            'publication_id': pubrow['publication_id'].decode('UTF-8'),
+                            'title': pubrow['title'].decode('UTF-8'),
+                            'ri_label': ri_label
+                        })
 
                     obj = ResponseObject(row['uuid'].decode('UTF-8'),
                                         row['name'].decode('UTF-8'),
@@ -62,27 +78,29 @@ class RepoAccess():
                                         row['research_interests'],
                                         row['nationality'].decode('UTF-8'),
                                         row['gender'].decode('UTF-8'),
+                                        [item for item in publication_list if len(item) != 0],
                                         hop_dis[i],
                                         cos_sim[i])
                     return_array.append(obj)
 
         return return_array
 
-    def reload_database(self, user_file, sim_file):
+    def reload_database(self, user_file, sim_file, file_with_mapped_research_interest):
         converter = Converter(self.h5file)
-        converter.convert_to_user_info(user_file)
+        converter.convert_to_user_info(user_file, file_with_mapped_research_interest)
         converter.convert_to_similarity_file(sim_file)
         return
 
 
 class ResponseObject():
 
-    def __init__(self, uuid, name, affiliation, research_interests, nationality, gender, hop_distance, cosine_sim):
+    def __init__(self, uuid, name, affiliation, research_interests, nationality, gender, publication_list, hop_distance, cosine_sim):
         self.uuid = uuid
         self.name = name
         self.affiliation = affiliation
         self.research_interests = research_interests
         self.gender = gender
         self.nationality = nationality
+        self.publication_list = publication_list
         self.hop_distance = hop_distance
         self.cosine_sim = cosine_sim
