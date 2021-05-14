@@ -4,11 +4,20 @@ import tables as pt
 from .converter import Converter
 
 class RepoAccess():
+    """
+    This class acts as a Data Access Layer that simplies the boilerplate codes 
+    and offers an abstraction to the upper level classes. We use this class 
+    to gain access to the HDF5 database and to get required objects out of it.
+    """
 
     def __init__(self, h5file):
         self.h5file = h5file
 
     def get_all_users(self, start_index, end_index):
+        """
+        Method to obtain all users from the table. It contains start and end 
+        index to facilitate pagination. 
+        """
 
         counter = 0
         all_user = []
@@ -30,6 +39,10 @@ class RepoAccess():
         return all_user
 
     def get_similarity(self, uuid, research_interest):
+        """
+        Method to obtain a set of users along with their similarity scores based 
+        on the UUID and research interest provided on the upstream method e.g. UI.
+        """
 
         cos_sim = []
         hop_dis = []
@@ -83,6 +96,9 @@ class RepoAccess():
         return return_array
 
     def reload_database(self, user_file, sim_file, file_with_mapped_research_interest):
+        """
+        Method to facilitate database regeneration. 
+        """
         converter = Converter(self.h5file)
         converter.convert_to_user_info(user_file, file_with_mapped_research_interest)
         converter.convert_to_similarity_file(sim_file)
@@ -90,7 +106,9 @@ class RepoAccess():
 
 
 class ResponseObject():
-
+    """
+    Object structure for Respose to calling method. 
+    """
     def __init__(self, uuid, name, affiliation, research_interests, nationality, gender, publication_list, hop_distance, cosine_sim):
         self.uuid = uuid
         self.name = name

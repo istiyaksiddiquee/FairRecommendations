@@ -18,15 +18,19 @@ class Initialization(APIView):
         it will check for the availability of the database file that is required for this application. If it is not \
             in the appropriate location, then the method will return a non-zero response. """,
         responses={
-            200: openapi.Response("Successful Response with array of users"),
-            404: openapi.Response("Required Object Not Found"),
+            200: openapi.Response("Successful"),
+            404: openapi.Response("One or multiple required file(s) were not found"),
         },
         tags=["Initialization"],
     )
     def get(self, request, format=None):
 
         status = InitialCheckup.check_for_db_availability()
-        return Response({"status": status})
+        if status == 0:
+            return Response("Successful", status=status.HTTP_200_OK)
+        else:
+            return Response("One or multiple required file(s) were not found", status=status.HTTP_404_NOT_FOUND)
+
 
 
 class ResearchInterest(APIView):
@@ -35,15 +39,10 @@ class ResearchInterest(APIView):
     @swagger_auto_schema(
         operation_summary="Returns a list of available Research Interests",
         operation_description="""This is a GET method that does not require any other parameter. Upon invocation, \
-        it will returns a list of strings where each string represents a research \
+            it will returns a list of strings where each string represents a research \
             interest that is available and applicable in the system.""",
-        manual_parameters=[
-            openapi.Parameter(name="page_size", in_=openapi.IN_QUERY, required=False, description="Size of each page", type=openapi.TYPE_STRING),
-            openapi.Parameter(name="page_number", in_=openapi.IN_QUERY, required=False, description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
-        ],
         responses={
-            200: openapi.Response("Successful Response with array of users"),
-            400: openapi.Response("Malformed URL Request"),
+            200: openapi.Response({"research_interests": []})
         },
         tags=["Listing Research Interests"],
     )
@@ -85,7 +84,7 @@ class ResearchInterest(APIView):
             "User Modeling",
             "Virtual Reality",
         ]
-        return Response({"research_interests": research_interest})
+        return Response({"research_interests": research_interest}, status=status.HTTP_200_OK)
 
     # def regenerate_ri(self, request, format=None):
     #     db_svc = DatabaseResetService()
@@ -93,6 +92,8 @@ class ResearchInterest(APIView):
 
 
 class User(APIView):
+    """View related to Getting list of users"""
+
     @swagger_auto_schema(
         operation_summary="Returns a list of Users",
         operation_description="""This is a GET method that returns a list of Users. It can be used with or without the pagination parameters. \
@@ -103,7 +104,7 @@ class User(APIView):
         ],
         responses={
             200: openapi.Response("Successful Response with array of users"),
-            400: openapi.Response("Malformed URL Request"),
+            400: openapi.Response("Malformed Parameter(s)"),
         },
         tags=["Listing Available Users"],
     )
@@ -114,17 +115,19 @@ class User(APIView):
 
         if req_page_size != None and req_page_number != None:
             if req_page_size.isnumeric() != True or req_page_number.isnumeric() != True:
-                return Response().status_code(400)
+                return Response("Malformed Parameter(s)", status=status.HTTP_400_BAD_REQUEST)
         else:
             req_page_size = 902
             req_page_number = 0
 
         recommendation_service = RecommendationService()
         output = recommendation_service.get_all_users(req_page_number, req_page_size)
-        return Response(output)
+        return Response(output, status=status.HTTP_200_OK)
 
 
 class Recommendation(APIView):
+    """View for obtaining recommendation for a specific user and a specific research interest"""
+
     @swagger_auto_schema(
         operation_summary="Returns calculated Recommendations",
         operation_description="""This is a GET method that returns two lists of Recommendations. One of these list possess uncorrected, raw recommendation. \
@@ -140,7 +143,8 @@ class Recommendation(APIView):
         ],
         responses={
             200: openapi.Response("Successful Response with bias and bias corrected list", output={"with_bias": "", "bias_corrected": "", "length": "", "female_ratio": ""}),
-            400: openapi.Response("Malformed URL Request"),
+            400: openapi.Response("Malformed Parameter(s)"),
+            500: openapi.Response("Internal Server Error"),
         },
         tags=["Generating Recommendation"],
     )
@@ -153,10 +157,12 @@ class Recommendation(APIView):
         req_page_number = request.GET["page_number"]
 
         if req_uuid == None or len(req_uuid) == 0 or req_research_interest == None or len(req_research_interest) == 0:
-            return Response().status_code(400)
+            return Response("Malformed Parameter(s)", status=status.HTTP_400_BAD_REQUEST)
+        
+        # pagination parameters are not mandatory here
         if req_page_size != None and req_page_number != None:
             if req_page_size.isnumeric() != True or req_page_number.isnumeric() != True:
-                return Response().status_code(400)
+                return Response("Malformed Parameter(s)", status=status.HTTP_400_BAD_REQUEST)
 
         recommendation_service = RecommendationService()
         output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
@@ -168,6 +174,8 @@ class Recommendation(APIView):
 
 
 class DatabaseReset(APIView):
+    """View related to regenerating the database."""
+
     @swagger_auto_schema(
         operation_summary="URL for regenerating database",
         operation_description="""Sometimes, due to the change in the database, we shall feel the necessity of repopulating the database. This URL is \
@@ -180,27 +188,41 @@ class DatabaseReset(APIView):
         ],
         responses={
             200: openapi.Response("Successful!"),
-            400: openapi.Response("Malformed Request"),
+            400: openapi.Response("Malformed Parameter(s)"),
+            500: openapi.Response("Internal Server Error"),
         },
         tags=["Database Reset"],
     )
     def get(self, request, format=None):
+
         req_person = request.GET["person_json"]
         req_similarity = request.GET["similarity_json"]
         req_pickle_file_name = request.GET["pickle_file_name"]
 
-        if req_person == None or len(req_person) == 0 or req_similarity == None or len(req_similarity) == 0 or req_pickle_file_name == None or len(req_pickle_file_name) == 0:
+        # pickle file name is made to be mandatory
+        if req_pickle_file_name == None or len(req_pickle_file_name) == 0:
             return Response("Malformed Request", status=status.HTTP_400_BAD_REQUEST)
 
-        # call to neo4j code to recreate these json files
-        # with the corresponding name
-        # neosvc = Neo4jSVC()
-        # req_person, req_similarity = neosvc.populate_json(req_person, req_similarity)
+        # json file for person information is not mandatory. if it is not provided, then a predefined name is assigned
+        if req_person != None: 
+            if len(req_person) != 0:
+                return Response("Malformed Parameter(s)", status=status.HTTP_400_BAD_REQUEST)
+        else:
+            req_person = "persons_list.json"
+
+
+        # json file for similarity information is not mandatory. if it is not provided, then a predefined name is assigned
+        if req_similarity != None:
+            if len(req_similarity) != 0:
+                return Response("Malformed Parameter(s)", status=status.HTTP_400_BAD_REQUEST)
+        else:
+            req_similarity = "scores_dict.json"
+
 
         db_rest_svc = DatabaseResetService()
         return_code = db_rest_svc.recreate_db(req_person, req_similarity, req_pickle_file_name)
 
         if return_code != 0:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response("Internal Server Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response("Success")
+        return Response("Success", status=status.HTTP_200_OK)

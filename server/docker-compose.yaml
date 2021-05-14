@@ -15,6 +15,7 @@ services:
     environment: 
       - DATA_PATH=${DATA_DIR}
       - DB_FILE_NAME=${DB_FILE_NAME}
+      - MAPPING_FILE_NAME=${MAPPING_FILE_NAME}
   fairness_front:
     container_name: fair_front
     image: ${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}

@@ -9,6 +9,10 @@ import tables as pt
 
 
 class User(pt.IsDescription):
+    """
+    Skeleton for User Table inside HDF5
+    """
+
     uuid = pt.StringCol(50)
     name = pt.StringCol(50)
     nationality = pt.StringCol(40)
@@ -17,6 +21,10 @@ class User(pt.IsDescription):
 
 
 class Publication(pt.IsDescription):
+    """
+    Skeleton for Publication Table inside HDF5
+    """
+
     publication_id = pt.StringCol(50)
     author_id = pt.StringCol(50)  # uuid
     title = pt.StringCol(200)
@@ -25,22 +33,39 @@ class Publication(pt.IsDescription):
 
 
 class Similarity(pt.IsDescription):
+    """
+    Skeleton for Similarity Table inside HDF5
+    """
+
     uuid = pt.StringCol(50)
     hop_distance = pt.Float32Col(shape=920)
     cosine_sim = pt.Float32Col(shape=920)
 
 
 class Similarity_UserArray(pt.IsDescription):
+    """
+    Skeleton for storing user array in HDF5
+    """
+
     id = pt.Int32Col()
     users = pt.StringCol(itemsize=50, shape=920)
 
 
 class Converter:
+    """
+    Converter class takes care of the JSONs produced by Recommender System Class
+    and converts them into H5 file that is used as a data storage
+    """
+
     def __init__(self, h5file):
         self.h5file = h5file
         self.label_dict = None
 
     def convert_to_similarity_file(self, sim_file):
+        """
+        This method transforms the json containing similarity and hop distances into a compatible
+        representation to store inside the above mentioned tables
+        """
 
         uarray = self.h5file.create_table(self.h5file.root, "similarity_userarray", Similarity_UserArray)
         sim_table = self.h5file.create_table(self.h5file.root, "similarity", Similarity)
@@ -82,6 +107,10 @@ class Converter:
         sim_table.flush()
 
     def convert_to_user_info(self, json_file, file_mapped_research_interest):
+        """
+        This method takes the user json file and generates data representaion of it, which is
+        suitable to store in the h5 file. We store those data in user_info and publication table.
+        """
 
         self.label_dict = self.generate_publication_label_dict(file_mapped_research_interest)
         user_info_table = self.h5file.create_table(self.h5file.root, "user_info", User)
@@ -105,6 +134,7 @@ class Converter:
                 for i in range(15):
                     interest_arr.append("")
 
+                # parsing research interest into suitable array representation
                 for j in range(len(obj.research_interest)):
                     if j < 15:
                         interest_arr[j] = obj.research_interest[j].title().strip().encode(encoding="UTF-8")
@@ -122,12 +152,13 @@ class Converter:
                     pub_row["abstract"] = p.abstract.encode(encoding="UTF-8")
 
                     label_list = self.parse_label_list_from_dict(self.label_dict, publication_id.decode(encoding="UTF-8"))
-                    
+
                     label_arr = []
 
                     for i in range(10):
                         label_arr.append("")
 
+                    # parsing publications
                     for j in range(len(label_list)):
                         if j < 10:
                             label_arr[j] = label_list[j].title().strip().encode(encoding="UTF-8")
@@ -145,6 +176,9 @@ class Converter:
         return
 
     def sample_from_user(self):
+        """
+        Simple test method to validate the successful completion of the transformation of user json
+        """
 
         user_tbl = self.h5file.root.user_info
         paper_tbl = self.h5file.root.publication
@@ -156,6 +190,9 @@ class Converter:
                 print(item["title"])
 
     def sample_from_similarity(self):
+        """
+        Simple test method to validate the successful completion of the transformation of similairy json
+        """
 
         tbl = self.h5file.root.similarity
         for row in tbl.where("uuid == '" + "xyz2" + "'"):
@@ -163,12 +200,18 @@ class Converter:
             print(row["cosine_sim"])
 
     def sample_from_sim_user_array(self):
+        """
+        Simple test method to validate the successful completion of the transformation of similairy json
+        """
 
         tbl = self.h5file.root.similarity_userarray
         for row in tbl.where("id == " + str(1)):
             print(row["users"])
 
     def generate_publication_label_dict(self, input_file):
+        """
+        Helper method to generate label dict from the publication information
+        """
 
         with open(input_file, "rb") as f:
             encoding = chardet.detect(f.read(10000))["encoding"]
@@ -179,6 +222,10 @@ class Converter:
         return dictionary
 
     def parse_label_list_from_dict(self, dictionary, publication_id):
+        """
+        Helper method to parse labels for a particular publication from the dict that was produced
+        in the above mentioned method.
+        """
 
         if publication_id in dictionary:
             label_list = dictionary[publication_id]
