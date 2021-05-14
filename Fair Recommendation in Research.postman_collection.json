@@ -71,7 +71,7 @@
 			"name": "Get Recommendation",
 			"request": {
 				"url": {
-					"raw": "localhost:8080/api/recommendation/?uuid=b12408f0-d239-49cb-8098-c88f76fad069&research_interest=Education&sim_weight=0.3&page_size=5&page_number=0",
+					"raw": "localhost:8080/api/recommendation/?uuid=b12408f0-d239-49cb-8098-c88f76fad069&research_interest=Information Retrieval&sim_weight=0.4&page_size=10&page_number=0",
 					"host": [
 						"localhost"
 					],
@@ -90,19 +90,19 @@
 						},
 						{
 							"key": "research_interest",
-							"value": "Education",
+							"value": "Information Retrieval",
 							"equals": true,
 							"description": ""
 						},
 						{
 							"key": "sim_weight",
-							"value": "0.3",
+							"value": "0.4",
 							"equals": true,
 							"description": ""
 						},
 						{
 							"key": "page_size",
-							"value": "5",
+							"value": "10",
 							"equals": true,
 							"description": ""
 						},
@@ -126,7 +126,7 @@
 			"name": "Get User List",
 			"request": {
 				"url": {
-					"raw": "localhost:8080/api/users/?page_number=0&page_size=2",
+					"raw": "localhost:8080/api/users/?page_number=0&page_size=20",
 					"host": [
 						"localhost"
 					],
@@ -145,7 +145,7 @@
 						},
 						{
 							"key": "page_size",
-							"value": "2",
+							"value": "20",
 							"equals": true,
 							"description": ""
 						}
