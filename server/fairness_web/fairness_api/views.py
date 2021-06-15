@@ -5,12 +5,15 @@ from rest_framework import status
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import IsAuthenticated
 
 from .services import RecommendationService, DatabaseResetService, InitialCheckup
 
 
 class Initialization(APIView):
     """Methods related to initial requirement checking"""
+
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_summary="Validates the availability of required resources to continue with the application",
@@ -35,6 +38,8 @@ class Initialization(APIView):
 
 class ResearchInterest(APIView):
     """Methods related to obtaining research interests available in the system"""
+
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_summary="Returns a list of available Research Interests",
@@ -94,6 +99,8 @@ class ResearchInterest(APIView):
 class User(APIView):
     """View related to Getting list of users"""
 
+    permission_classes = (IsAuthenticated,)
+
     @swagger_auto_schema(
         operation_summary="Returns a list of Users",
         operation_description="""This is a GET method that returns a list of Users. It can be used with or without the pagination parameters. \
@@ -128,6 +135,8 @@ class User(APIView):
 class Recommendation(APIView):
     """View for obtaining recommendation for a specific user and a specific research interest"""
 
+    permission_classes = (IsAuthenticated,)
+
     @swagger_auto_schema(
         operation_summary="Returns calculated Recommendations",
         operation_description="""This is a GET method that returns two lists of Recommendations. One of these list possess uncorrected, raw recommendation. \
@@ -138,8 +147,6 @@ class Recommendation(APIView):
             openapi.Parameter(name="uuid", in_=openapi.IN_QUERY, required=True, description="UUID of user", type=openapi.TYPE_STRING),
             openapi.Parameter(name="research_interest", in_=openapi.IN_QUERY, required=True, description="Research Interest from predefined list of Research Interest", type=openapi.TYPE_STRING),
             openapi.Parameter(name="sim_weight", in_=openapi.IN_QUERY, required=True, description="Preference indicative weight for cosine similarity", type=openapi.TYPE_STRING),
-            openapi.Parameter(name="page_size", in_=openapi.IN_QUERY, required=False, description="Size of each page", type=openapi.TYPE_STRING),
-            openapi.Parameter(name="page_number", in_=openapi.IN_QUERY, required=False, description="Number of each page, starting from 0", type=openapi.TYPE_STRING),
         ],
         responses={
             200: openapi.Response("Successful Response with bias and bias corrected list", output={"with_bias": "", "bias_corrected": "", "length": "", "female_ratio": ""}),
@@ -153,19 +160,19 @@ class Recommendation(APIView):
         req_uuid = request.GET["uuid"]
         req_research_interest = request.GET["research_interest"]
         req_sim_weight = request.GET["sim_weight"]
-        req_page_size = request.GET["page_size"]
-        req_page_number = request.GET["page_number"]
+        # req_page_size = request.GET["page_size"]
+        # req_page_number = request.GET["page_number"]
 
         if req_uuid == None or len(req_uuid) == 0 or req_research_interest == None or len(req_research_interest) == 0:
             return Response("Malformed Parameter(s)", status=status.HTTP_400_BAD_REQUEST)
         
         # pagination parameters are not mandatory here
-        if req_page_size != None and req_page_number != None:
-            if req_page_size.isnumeric() != True or req_page_number.isnumeric() != True:
-                return Response("Malformed Parameter(s)", status=status.HTTP_400_BAD_REQUEST)
+        # if req_page_size != None and req_page_number != None:
+        #     if req_page_size.isnumeric() != True or req_page_number.isnumeric() != True:
+        #         return Response("Malformed Parameter(s)", status=status.HTTP_400_BAD_REQUEST)
 
         recommendation_service = RecommendationService()
-        output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight, req_page_size, req_page_number)
+        output = recommendation_service.get_recommendation(req_uuid, req_research_interest, req_sim_weight)
 
         if output == 1:
             return Response("Internal Server Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -175,6 +182,8 @@ class Recommendation(APIView):
 
 class DatabaseReset(APIView):
     """View related to regenerating the database."""
+
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_summary="URL for regenerating database",

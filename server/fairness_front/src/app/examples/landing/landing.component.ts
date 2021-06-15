@@ -1,4 +1,5 @@
 import { Component, OnInit } from "@angular/core";
+import { ActivatedRoute } from '@angular/router';
 
 import { LandingService } from "./landing.service";
 
@@ -21,18 +22,31 @@ export class LandingComponent implements OnInit {
   users = [];
   with_bias = [];
   bias_corrected = [];
+
+  whole_data_with_bias = [];
+  whole_data_bias_corrected = [];
+
   research_interests = [];
 
   female_ratio = null;
 
-  constructor(private landingService: LandingService) {}
+  header_for_backend = null; 
+
+  constructor(private landingService: LandingService, 
+    private route: ActivatedRoute) {}
 
   ngOnInit() {
+    
+    this.route.queryParams
+      .subscribe(params => {
+        this.header_for_backend = params.token;
+      }
+    );
     this.InitialValidation();
   }
 
   InitialValidation() {
-    this.landingService.performInitialCheckup().subscribe(
+    this.landingService.performInitialCheckup(this.header_for_backend).subscribe(
       (data: any) => {
         var input_div = document.getElementById("input_compartment");
         input_div.hidden = false;
@@ -55,7 +69,7 @@ export class LandingComponent implements OnInit {
     const page_size = 902;
 
     this.landingService
-      .getAllUsers(page_number, page_size)
+      .getAllUsers(page_number, page_size, this.header_for_backend)
       .subscribe((data: any) => {
         this.users = data;
       }, (error: any) => {
@@ -64,7 +78,7 @@ export class LandingComponent implements OnInit {
   }
 
   loadResearchInterests() {
-    this.landingService.getResearchInterestList().subscribe((data: any) => {
+    this.landingService.getResearchInterestList(this.header_for_backend).subscribe((data: any) => {
       for (let i = 0; i < data.research_interests.length; i++) {
         this.research_interests.push({ name: data.research_interests[i] });
       }
@@ -73,6 +87,23 @@ export class LandingComponent implements OnInit {
 
   loadRecommendationData() {
     const page_number = 0;
+  
+    this.collection_size = null;
+    this.with_bias = [];
+    this.bias_corrected = [];
+    this.whole_data_with_bias = [];
+    this.whole_data_bias_corrected = [];
+    this.female_ratio = null;
+
+    var pagination_div = document.getElementById("pagination_div");
+    var result_section = document.getElementById("result_section");
+    var no_data_div = document.getElementById("no-data-div");
+    no_data_div.hidden = true;
+    pagination_div.hidden = true;
+    result_section.hidden = true;
+
+    const start_index = page_number * this.page_size; 
+    const end_index = start_index + this.page_size; 
 
     const sim_weight = this.simpleSlider;
     const uuid = this.selected_user.uuid;
@@ -84,17 +115,28 @@ export class LandingComponent implements OnInit {
         research_interest,
         sim_weight,
         page_number,
-        this.page_size
+        this.page_size,
+        this.header_for_backend
       )
       .subscribe((data: any) => {
-        this.with_bias = data.with_bias;
-        this.bias_corrected = data.bias_corrected;
-        this.collection_size = data.length;
-        this.female_ratio = data.female_ratio;
-        var pagination_div = document.getElementById("pagination_div");
-        var result_section = document.getElementById("result_section");
-        pagination_div.hidden = false;
-        result_section.hidden = false;
+        if( data == null || data.length == 0) {
+          var no_data_div = document.getElementById("no-data-div");
+          no_data_div.hidden = false;
+        } else {
+          this.whole_data_with_bias = data.with_bias;
+          this.whole_data_bias_corrected = data.bias_corrected;
+
+          this.with_bias = this.whole_data_with_bias.slice(start_index, end_index);
+          this.bias_corrected = this.whole_data_bias_corrected.slice(start_index, end_index);
+
+          this.collection_size = data.length;
+          this.female_ratio = data.female_ratio;
+          var pagination_div = document.getElementById("pagination_div");
+          var result_section = document.getElementById("result_section");
+          pagination_div.hidden = false;
+          result_section.hidden = false;
+
+        }
       }, (error: any) => {
         console.log(error);
       });
@@ -123,25 +165,14 @@ export class LandingComponent implements OnInit {
 
     page_number--;
 
-    const sim_weight = this.simpleSlider;
-    const uuid = this.selected_user.uuid;
-    const research_interest = this.selected_interest.name;
+    var start_index = page_number * this.page_size; 
+    var end_index = start_index + this.page_size; 
 
-    this.landingService
-      .getRecommendation(
-        uuid,
-        research_interest,
-        sim_weight,
-        page_number,
-        this.page_size
-      )
-      .subscribe((data: any) => {
-        var vanishingDiv = document.getElementById("vanishing_div"); 
-        vanishingDiv.hidden = false; 
-        this.with_bias = data.with_bias;
-        this.bias_corrected = data.bias_corrected;
-        this.collection_size = data.length;
-      });
+    this.with_bias = this.whole_data_with_bias.slice(start_index, end_index);
+    this.bias_corrected = this.whole_data_bias_corrected.slice(start_index, end_index);
+    
+    vanishingDiv.hidden = false;
+
   }
 
   userSelectEvent(item) {

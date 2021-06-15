@@ -76,9 +76,10 @@ class RecommendationService:
 
         output = self.access.get_all_users(start_index, end_index)
         self.read_mode.close()
+        output.sort(key=lambda x: x['name'].strip(), reverse=False)
         return output
 
-    def get_recommendation(self, req_uuid, req_research_interest, weight_for_similarity, req_page_size, req_page_number):
+    def get_recommendation(self, req_uuid, req_research_interest, weight_for_similarity):
         """
         Method to get the recommendation based on uuid, research interest, weight for similairy and pagination params
         """
@@ -94,6 +95,11 @@ class RecommendationService:
         scored_items = []
 
         for item in obj_array:
+
+            if item.uuid == req_uuid:
+                obj_array.remove(item)
+                continue
+
             if req_research_interest.encode(encoding="ascii") in item.research_interests:
 
                 paper_list = []
@@ -138,16 +144,16 @@ class RecommendationService:
             with_bias = self.sort_biased_array(scored_items)
 
             # bias_corrected = self.sort_bias_processed_array(scored_items)
-            bias_corrected = self.bias_correction(copy.deepcopy(with_bias), female_ratio, page_size=req_page_size)
+            bias_corrected = self.bias_correction(copy.deepcopy(with_bias), female_ratio, page_size=10)
             bias_corrected = self.add_reference_to_bias_corrected_data(with_bias, bias_corrected)
 
             # implementing pagination
-            if req_page_size != None and req_page_number != None:
-                start_index = int(req_page_size) * int(req_page_number)
-                end_index = start_index + int(req_page_size)
+            # if req_page_size != None and req_page_number != None:
+            #     start_index = int(req_page_size) * int(req_page_number)
+            #     end_index = start_index + int(req_page_size)
 
-                with_bias = with_bias[start_index:end_index]
-                bias_corrected = bias_corrected[start_index:end_index]
+            #     with_bias = with_bias[start_index:end_index]
+            #     bias_corrected = bias_corrected[start_index:end_index]
 
             output = {
                 "with_bias": self.jsonify_recommendation(with_bias, True),
