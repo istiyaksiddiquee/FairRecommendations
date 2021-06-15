@@ -1,0 +1,9 @@
+build:
+ docker:
+   web: ./server/docker-compose
+   env: 
+
+
+# 1. make sure that we can enter our env file 
+# 2. for the env file, we need host our database i.e. db.h5 someplace 
+# and point it to resource_path

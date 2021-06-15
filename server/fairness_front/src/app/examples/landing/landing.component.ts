@@ -87,6 +87,7 @@ export class LandingComponent implements OnInit {
 
   loadRecommendationData() {
     const page_number = 0;
+    this.page = 1;
   
     this.collection_size = null;
     this.with_bias = [];
@@ -163,7 +164,7 @@ export class LandingComponent implements OnInit {
     var vanishingDiv = document.getElementById("vanishing_div"); 
     vanishingDiv.hidden = true; 
 
-    page_number--;
+    page_number--; // because index starts from 0
 
     var start_index = page_number * this.page_size; 
     var end_index = start_index + this.page_size; 
