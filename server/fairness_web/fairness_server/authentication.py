@@ -1,4 +1,5 @@
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 from datetime import datetime 
 
 class AuthenticatedServiceClient:
@@ -34,11 +35,12 @@ class JwtServiceOnlyAuthentication(JSONWebTokenAuthentication):
 
     def authenticate_credentials(self, payload):
         # Assign properties from payload to the AuthenticatedServiceClient object if necessary
-        allowed = False
+        allowed = True
         current_timestamp = datetime.now().timestamp()
 
-        if payload['uuid'] in self.allowed_uuid_list:
-            if payload['token_expiry'] - current_timestamp > 0:
-                allowed = True
+        if payload['uuid'] not in self.allowed_uuid_list:
+            raise AuthenticationFailed("Authentication Failed. Please Contact Admin", 401)
+        elif payload['token_expiry'] - current_timestamp < 0:            
+            raise AuthenticationFailed("Authentication Failed. Please Contact Admin", 401)
 
         return AuthenticatedServiceClient(allowed)

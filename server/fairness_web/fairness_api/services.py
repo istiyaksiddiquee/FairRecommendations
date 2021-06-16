@@ -63,8 +63,17 @@ class RecommendationService:
     def __init__(self):
 
         # Opening the file in the constructor will work as singleton pattern in our case.
-        self.read_mode = pt.open_file(Information.DATABASE_PATH.value + os.sep + Information.DATABASE_NAME.value, "r")
-        self.access = RepoAccess(self.read_mode)
+        DB_FILE_NAME = Information.DATABASE_PATH.value + os.sep + Information.DATABASE_NAME.value
+
+        for _ in range(3):
+            try:
+                self.read_mode = pt.open_file(DB_FILE_NAME, "r")
+                self.access = RepoAccess(self.read_mode)
+            except ValueError:
+                time.sleep(5)
+                continue
+            break
+            
 
     def get_all_users(self, page_number, page_size):
         """
