@@ -1,9 +1,7 @@
 build:
- docker:
-   web: ./server/docker-compose
-   env: 
+  docker:
+    fairness_web: fairness_web/Dockerfile
+    fairness_front: fairness_front/Dockerfile
 
-
-# 1. make sure that we can enter our env file 
-# 2. for the env file, we need host our database i.e. db.h5 someplace 
-# and point it to resource_path
+run:
+  fairness_web: python /code/manage.py runserver 0.0.0.0:8080
